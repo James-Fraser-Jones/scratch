@@ -1,23 +1,28 @@
 extends KinematicBody2D
 
+
+
 export var speed : int = 8
 
 var health : int = 100
 
-var rng = RandomNumberGenerator.new()
-	
-func _init():
-	var HurtTimer = Timer.new()
-	add_child(HurtTimer)
-	HurtTimer.autostart = true
-	HurtTimer.wait_time = 1
-	HurtTimer.connect("timeout", self, "hurt_time")
-	
-func _ready():
-	rng.randomize()
+#var rng = RandomNumberGenerator.new()
+#
+#func _init():
+#	var HurtTimer = Timer.new()
+#	add_child(HurtTimer)
+#	HurtTimer.autostart = true
+#	HurtTimer.wait_time = 1
+#	HurtTimer.connect("timeout", self, "hurt_time")
+#
+#func _ready():
+#	rng.randomize()
+#
+#func hurt_time():
+#	hurt(rng.randi_range(0, 30))
 
-func hurt_time():
-	hurt(rng.randi_range(0, 30))
+func _process(delta):
+	pass
 
 func _physics_process(delta):
 	var move : Vector2 = lrud() * speed
@@ -41,4 +46,4 @@ func hurt(damage):
 	health -= damage
 	$HealthBar.value = health
 	if health <= 0:
-		get_tree().change_scene("res://scenes/empty/empty.tscn")
+		queue_free()

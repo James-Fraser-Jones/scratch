@@ -1,8 +1,10 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=10 format=2]
 
 [ext_resource path="res://scenes/main/main.gd" type="Script" id=1]
 [ext_resource path="res://scenes/main/player.gd" type="Script" id=2]
 [ext_resource path="res://resources/my_theme.tres" type="Theme" id=3]
+[ext_resource path="res://scenes/main/Enemy.gd" type="Script" id=4]
+[ext_resource path="res://scenes/main/Bullet.gd" type="Script" id=5]
 
 [sub_resource type="CircleShape2D" id=1]
 radius = 40.0
@@ -10,11 +12,16 @@ radius = 40.0
 [sub_resource type="RectangleShape2D" id=2]
 extents = Vector2( 40, 40 )
 
+[sub_resource type="CircleShape2D" id=4]
+
+[sub_resource type="CircleShape2D" id=5]
+
 [node name="Main" type="Node2D"]
 script = ExtResource( 1 )
 
 [node name="Player" type="KinematicBody2D" parent="."]
 position = Vector2( 100, -100 )
+collision_layer = 2
 script = ExtResource( 2 )
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Player"]
@@ -37,17 +44,65 @@ __meta__ = {
 "_edit_use_anchors_": false
 }
 
+[node name="Enemy" type="KinematicBody2D" parent="."]
+position = Vector2( 591, 258 )
+collision_layer = 4
+script = ExtResource( 4 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Enemy"]
+shape = SubResource( 1 )
+
+[node name="HealthBar" type="ProgressBar" parent="Enemy"]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -30.0
+margin_top = -65.0
+margin_right = 30.0
+margin_bottom = -51.0
+theme = ExtResource( 3 )
+step = 1.0
+value = 100.0
+percent_visible = false
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
 [node name="Camera2D" type="Camera2D" parent="."]
 current = true
 zoom = Vector2( 2, 2 )
 
 [node name="Obstacle" type="StaticBody2D" parent="."]
+collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Obstacle"]
 shape = SubResource( 2 )
 
 [node name="Obstacle2" type="StaticBody2D" parent="."]
 position = Vector2( -228, -125 )
+collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionPolygon2D" parent="Obstacle2"]
+position = Vector2( -37, -29 )
 polygon = PoolVector2Array( -67, 29, -55, -81, 49, -51, 136, -118, 176, 13, 116, -66, 54, -18, -30, -49 )
+
+[node name="Bullet" type="KinematicBody2D" parent="."]
+position = Vector2( 7, 279 )
+rotation = 1.5708
+collision_layer = 8
+script = ExtResource( 5 )
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bullet"]
+shape = SubResource( 4 )
+
+[node name="HitBox" type="Area2D" parent="Bullet"]
+collision_layer = 8
+collision_mask = 4
+monitorable = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Bullet/HitBox"]
+shape = SubResource( 5 )
+
+[connection signal="body_entered" from="Bullet/HitBox" to="Enemy" method="_on_HitBox_body_entered"]
+[connection signal="body_entered" from="Bullet/HitBox" to="Bullet" method="_on_HitBox_body_entered"]
