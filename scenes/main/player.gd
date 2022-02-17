@@ -1,8 +1,6 @@
 extends KinematicBody2D
 
-
-
-export var speed : int = 8
+export var speed : int = 500
 
 var health : int = 100
 
@@ -25,7 +23,7 @@ func _process(delta):
 	pass
 
 func _physics_process(delta):
-	var move : Vector2 = lrud() * speed
+	var move : Vector2 = lrud() * speed * delta
 	var collision = move_and_collide(move)
 	if collision:
 		move_and_collide(collision.remainder.slide(collision.normal))
@@ -44,6 +42,6 @@ func lrud() -> Vector2:
 
 func hurt(damage):
 	health -= damage
-	$HealthBar.value = health
+	$health_bar.value = health
 	if health <= 0:
 		queue_free()
