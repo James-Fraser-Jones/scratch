@@ -3,6 +3,7 @@ extends Area2D
 export var speed : float = 2000
 export var max_time : float = 1
 export var damage : float = 5
+export var group : String = ""
 
 var cur_time : float = 0
 
@@ -16,6 +17,6 @@ func _physics_process(delta):
 	position += Vector2.UP.rotated(transform.get_rotation()) * speed * delta
 
 func _collision(body):
-	if body.is_in_group("enemies"):
+	if body.is_in_group(group):
 		body.hurt(damage)
 	queue_free()

@@ -8,25 +8,27 @@ export var attack_speed : float = 15
 export var attack_spread : float = .1
 
 var health : int = 100
-var attack_cur : float = 0
+var attack_cur : float = -1
 
 func _ready():
 	rng.randomize()
 
 func _physics_process(delta):
-	if attack_cur > 0:
+	if attack_cur >= 0:
 		attack_cur += delta
 		if attack_cur > 1/attack_speed:
-			attack_cur = 0
+			attack_cur = -1
 			
-	if attack_cur == 0 && Input.is_action_pressed("shoot"):
+	if attack_cur == -1 && Input.is_action_pressed("shoot"):
 		var bullet = bullet_scene.instance()
 		var mouse_pos = get_global_mouse_position()
 		var angle = (mouse_pos - position).angle()
 		bullet.rotation = angle + PI/2 + rng.randf_range(-attack_spread/2, attack_spread/2)
 		bullet.position = position
+		bullet.group = "enemies"
+		bullet.collision_mask = 5 #walls and enemies
 		get_parent().add_child(bullet)
-		attack_cur += 0.0001
+		attack_cur = 0
 		
 	var move : Vector2 = lrud() * speed * delta
 	var collision = move_and_collide(move)
