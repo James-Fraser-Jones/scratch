@@ -2,6 +2,7 @@ extends KinematicBody2D
 
 var rng = RandomNumberGenerator.new()
 var bullet_scene = preload("res://scenes/bullet.tscn")
+var enemy_scene = preload("res://scenes/enemy.tscn")
 
 export var speed : int = 500
 export var attack_speed : float = 15
@@ -10,8 +11,18 @@ export var attack_spread : float = .1
 var health : int = 100
 var attack_cur : float = -1
 
+var main : Node2D
+
 func _ready():
+	main = get_parent()
 	rng.randomize()
+	
+func _input(event):
+	if event.is_action_pressed("spawn"):
+		var enemy = enemy_scene.instance()
+		enemy.position = Vector2(600, 250)
+		enemy.add_to_group("enemies")
+		main.add_child(enemy)
 
 func _physics_process(delta):
 	if attack_cur >= 0:
@@ -27,7 +38,7 @@ func _physics_process(delta):
 		bullet.position = position
 		bullet.group = "enemies"
 		bullet.collision_mask = 5 #walls and enemies
-		get_parent().add_child(bullet)
+		main.add_child(bullet)
 		attack_cur = 0
 		
 	var move : Vector2 = lrud() * speed * delta

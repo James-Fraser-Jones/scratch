@@ -6,6 +6,7 @@ var bullet_scene = preload("res://scenes/bullet.tscn")
 
 var nav : Navigation2D
 var player : KinematicBody2D
+var main : Node2D
 
 export var speed : int = 350
 export var attack_speed : float = 3
@@ -18,6 +19,7 @@ func _ready():
 	rng.randomize()
 	nav = $"../nav"
 	player = $"../player"
+	main = get_parent()
 
 func _physics_process(delta):
 	if attack_cur >= 0:
@@ -36,7 +38,7 @@ func _physics_process(delta):
 				bullet.position = position
 				bullet.group = "players"
 				bullet.collision_mask = 3 #walls and players
-				get_parent().add_child(bullet)
+				main.add_child(bullet)
 				attack_cur = 0
 		
 		var nav_pos = nav.get_simple_path(position, player.position)[1]
