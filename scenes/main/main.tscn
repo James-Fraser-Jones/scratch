@@ -86,4 +86,5 @@ shape = SubResource( 5 )
 [node name="nav" type="Navigation2D" parent="."]
 
 [node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="nav"]
+visible = false
 navpoly = SubResource( 3 )

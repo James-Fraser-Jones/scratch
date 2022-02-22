@@ -1,16 +1,22 @@
 extends KinematicBody2D
 
-var rng = RandomNumberGenerator.new()
-var bullet_scene = preload("res://scenes/bullet.tscn")
+#ability 1
 
-export var speed : int = 500
 export var attack_speed : float = 15
 export var attack_spread : float = .1
 
-var health : int = 100
+var rng = RandomNumberGenerator.new()
+var bullet_scene = preload("res://scenes/bullet.tscn")
+var main : Node2D
+
 var attack_cur : float = -1
 
-var main : Node2D
+#actual player vars
+
+export var max_health : int = 100
+export var speed : int = 500
+
+var health : int = max_health
 
 func _ready():
 	rng.randomize()
@@ -32,14 +38,13 @@ func hurt(damage):
 	if health <= 0:
 		queue_free()
 		
-func shoot(shoot_vec):
+func shoot(shoot_vec, col_mask):
 	if attack_cur == -1:
 		var bullet = bullet_scene.instance()
 		var angle = shoot_vec.angle()
 		bullet.rotation = angle + PI/2 + rng.randf_range(-attack_spread/2, attack_spread/2)
 		bullet.position = position
-		bullet.group = "enemies"
-		bullet.collision_mask = 5 #walls and enemies
+		bullet.collision_mask = col_mask
 		main.add_child(bullet)
 		attack_cur = 0
 
@@ -51,7 +56,7 @@ func move(move_vec):
 func control(delta):
 	if Input.is_action_pressed("shoot"):
 		var shoot_vec = get_global_mouse_position() - position
-		shoot(shoot_vec)
+		shoot(shoot_vec, 5) #walls and enemies
 	var move_vec = lrud() * speed * delta
 	move(move_vec)
 
