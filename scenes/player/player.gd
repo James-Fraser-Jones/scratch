@@ -1,25 +1,6 @@
-extends KinematicBody2D
-
-export var max_health : int = 100
-export var speed : int = 500
-
-var health : int = max_health
+extends "res://scenes/character/character.gd"
 
 func _physics_process(delta):
-	control(delta)
-
-func hurt(damage):
-	health -= damage
-	$health_bar.value = health
-	if health <= 0:
-		queue_free()
-
-func move(move_vec):
-	var collision = move_and_collide(move_vec)
-	if collision:
-		move_and_collide(collision.remainder.slide(collision.normal))
-
-func control(delta):
 	if Input.is_action_pressed("shoot"):
 		var shoot_vec = get_global_mouse_position() - position
 		$gun.shoot(shoot_vec)

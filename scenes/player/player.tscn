@@ -1,40 +1,16 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=4 format=2]
 
-[ext_resource path="res://scenes/gun/gun.gd" type="Script" id=1]
+[ext_resource path="res://scenes/character/character.tscn" type="PackedScene" id=1]
 [ext_resource path="res://scenes/gun/gun.tscn" type="PackedScene" id=2]
 [ext_resource path="res://scenes/player/player.gd" type="Script" id=3]
-[ext_resource path="res://resources/my_theme.tres" type="Theme" id=4]
 
-[sub_resource type="CircleShape2D" id=1]
-radius = 40.0
-
-[node name="player" type="KinematicBody2D" groups=["players"]]
-position = Vector2( 100, -100 )
-collision_layer = 2
-collision_mask = 5
+[node name="player" instance=ExtResource( 1 )]
+collision_layer = 6
+collision_mask = 9
 script = ExtResource( 3 )
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-modulate = Color( 0.0784314, 1, 0, 1 )
-shape = SubResource( 1 )
+[node name="CollisionShape2D" parent="." index="0"]
+modulate = Color( 0.00784314, 1, 0, 1 )
 
-[node name="health_bar" type="ProgressBar" parent="."]
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-margin_left = -30.0
-margin_top = -65.0
-margin_right = 30.0
-margin_bottom = -51.0
-theme = ExtResource( 4 )
-step = 1.0
-value = 100.0
-percent_visible = false
-__meta__ = {
-"_edit_use_anchors_": false
-}
-
-[node name="gun" type="Node2D" parent="." instance=ExtResource( 2 )]
-script = ExtResource( 1 )
-col_mask = 5
+[node name="gun" parent="." index="2" instance=ExtResource( 2 )]
+col_mask = 9
