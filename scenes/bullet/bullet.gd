@@ -13,7 +13,7 @@ func _physics_process(delta):
 	cur_time += delta
 	if cur_time > max_time:
 		queue_free()
-	position += Vector2.UP.rotated(transform.get_rotation()) * speed * delta #don't use rotation like this, just use a script variable
+	position += Vector2.UP.rotated(transform.get_rotation()) * speed * delta
 
 func _collision(body):
 	if body.is_in_group("players") or body.is_in_group("enemies"):
