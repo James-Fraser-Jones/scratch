@@ -22,5 +22,3 @@ func _input(event):
 			player.position = Vector2(100, -100)
 			player.add_to_group("players")
 			add_child(player)
-		else:
-			print("nope!")
