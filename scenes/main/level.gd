@@ -5,6 +5,7 @@ export var width: float = 2048
 export var height: float = 1200
 export var offset: float = 45
 export var circle_res: int = 10
+export var circle_res_growth: float = .01
 export var target: NodePath
 export var bake: bool = false setget run_bake
 
@@ -34,11 +35,12 @@ func bake_() -> void:
 						poly = PoolVector2Array([Vector2(-ext.x, -ext.y), Vector2(ext.x, -ext.y), Vector2(ext.x, ext.y), Vector2(-ext.x, ext.y)])
 					elif shape is CircleShape2D:
 						var rad = shape.radius
-						local_offset = (offset + rad)/cos(PI / circle_res) - rad #https://en.wikipedia.org/wiki/Apothem
+						var local_circle_res = max(3, int(circle_res * rad * circle_res_growth))
+						local_offset = (offset + rad)/cos(PI / local_circle_res) - rad #https://en.wikipedia.org/wiki/Apothem
 						print(local_offset)
 						poly = PoolVector2Array()
-						for i in range(0, circle_res):
-							poly.push_back((Vector2.UP*rad).rotated(i * (2 * PI)/circle_res))
+						for i in range(0, local_circle_res):
+							poly.push_back((Vector2.UP*rad).rotated(i * (2 * PI)/local_circle_res))
 					else:
 						continue
 				else:
