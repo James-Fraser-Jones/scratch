@@ -9,9 +9,6 @@ onready var main : Node2D = $"/root/main"
 
 var attack_cur : float = -1
 
-func _ready():
-	randomize()
-
 func _physics_process(delta):
 	shoot_timer(delta)
 

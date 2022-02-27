@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=2]
+[gd_scene load_steps=9 format=2]
 
 [ext_resource path="res://scenes/main/main.gd" type="Script" id=1]
 [ext_resource path="res://scenes/main/level.gd" type="Script" id=2]
+[ext_resource path="res://scenes/main/map.gd" type="Script" id=3]
 
 [sub_resource type="RectangleShape2D" id=2]
 extents = Vector2( 40, 40 )
@@ -72,3 +73,12 @@ shape = SubResource( 7 )
 
 [node name="NavigationPolygonInstance" type="NavigationPolygonInstance" parent="nav"]
 navpoly = SubResource( 8 )
+
+[node name="map" type="StaticBody2D" parent="."]
+collision_layer = 0
+collision_mask = 0
+script = ExtResource( 3 )
+octaves = 0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="map"]
+polygon = PoolVector2Array( 0, 0, 100, 0, 0, 100 )

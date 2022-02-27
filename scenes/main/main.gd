@@ -3,6 +3,9 @@ extends Node2D
 const player_scene = preload("res://scenes/player/player.tscn")
 const enemy_scene = preload("res://scenes/enemy/enemy.tscn")
 
+func _ready():
+	randomize()
+
 func _input(event):
 	if event.is_action_pressed("exit"):
 		get_tree().quit()
