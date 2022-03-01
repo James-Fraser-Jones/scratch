@@ -1,6 +1,8 @@
 tool
 extends StaticBody2D
 
+enum DIAG {FALSE = 0, AVERAGE = 1, TRUE = 2}
+
 export var seeed: int = 0
 export var period: float = 64.0
 
@@ -11,7 +13,7 @@ export var persistence: float = 0.5
 export var cols: int = 10
 export var rows: int = 10
 export var threshold: float = 0
-export var diag: bool = false
+export var diag: int = DIAG.AVERAGE
 export var interp: bool = true
 
 export var generate: bool setget run_generate
@@ -26,13 +28,13 @@ const lookup_table = [
 	[[Vector2(0,1),Vector2(2,1),Vector2(2,2),Vector2(0,2)]],
 	
 	[[Vector2(2,0),Vector2(2,1),Vector2(1,0)]],
-	[[Vector2(0,2),Vector2(0,1),Vector2(1,0),Vector2(2,0),Vector2(2,1),Vector2(1,2)]], #5. ambiguous (center filled)
+	[[Vector2(0,2),Vector2(0,1),Vector2(1,2)],[Vector2(2,0),Vector2(2,1),Vector2(1,0)]],
 	[[Vector2(1,0),Vector2(2,0),Vector2(2,2),Vector2(1,2)]],
 	[[Vector2(1,0),Vector2(2,0),Vector2(2,2),Vector2(0,2),Vector2(0,1)]],
 	
 	[[Vector2(0,0),Vector2(1,0),Vector2(0,1)]],
 	[[Vector2(0,0),Vector2(1,0),Vector2(1,2),Vector2(0,2)]],
-	[[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(1,2),Vector2(0,1)]], #10. ambiguous (center filled)
+	[[Vector2(0,0),Vector2(1,0),Vector2(0,1)],[Vector2(2,2),Vector2(1,2),Vector2(2,1)]],
 	[[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(0,2)]],
 	
 	[[Vector2(0,0),Vector2(2,0),Vector2(2,1),Vector2(0,1)]],
@@ -40,9 +42,8 @@ const lookup_table = [
 	[[Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(1,2),Vector2(0,1)]],
 	[[Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(0,2)]],
 	
-	#16 17. missing ambiguous cases (center unfilled)
-	[[Vector2(0,2),Vector2(0,1),Vector2(1,2)],[Vector2(2,0),Vector2(2,1),Vector2(1,0)]],
-	[[Vector2(0,0),Vector2(1,0),Vector2(0,1)],[Vector2(2,2),Vector2(1,2),Vector2(2,1)]],
+	[[Vector2(0,2),Vector2(0,1),Vector2(1,0),Vector2(2,0),Vector2(2,1),Vector2(1,2)]], 
+	[[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(1,2),Vector2(0,1)]],
 ]
 
 func run_generate(_b):
@@ -67,7 +68,7 @@ func add_from_lookup_grid(lookup_grid, noise_grid):
 				var points = shallow_copy_array(point_set)
 				var translate = Vector2(i, j) * 2
 				for p in range(0, points.size()):
-					if interp:
+					if interp: #perform interpolation
 						if points[p].x == 1:
 							var l = noise_grid[j + points[p].y/2][i]
 							var r = noise_grid[j + points[p].y/2][i+1]
@@ -107,11 +108,6 @@ func get_lookup_val(tl, tr, bl, br, threshold) -> int:
 	acc += int(br > threshold)
 	acc *= 2
 	acc += int(bl > threshold)
-	if !diag:
-		if acc == 5:
-			acc = 16
-		elif acc == 10:
-			acc = 17
 	return acc
 
 func get_lookup_grid(rows, cols, grid, threshold) -> Array:
@@ -123,9 +119,28 @@ func get_lookup_grid(rows, cols, grid, threshold) -> Array:
 			var tr = grid[j][i+1]
 			var bl = grid[j+1][i]
 			var br = grid[j+1][i+1]
-			lookup_row.append(get_lookup_val(tl, tr, bl, br, threshold))
+			var lookup_val = get_lookup_val(tl, tr, bl, br, threshold)
+			if lookup_val == 5 or lookup_val == 10: #handle ambiguous cases
+				match diag:
+					DIAG.TRUE:
+						lookup_val = fill_middle(lookup_val)
+					DIAG.FALSE:
+						pass
+					DIAG.AVERAGE:
+						var avg = (tl + tr + bl + br)/4
+						if avg > threshold:
+							lookup_val = fill_middle(lookup_val)
+			lookup_row.append(lookup_val)
 		lookup_grid.append(lookup_row)
 	return lookup_grid
+
+func fill_middle(val: int) -> int:
+	var filled
+	if val == 5:
+		filled = 16 
+	else:
+		filled = 17
+	return filled
 
 func get_noise_grid(rows, cols, noise) -> Array:
 	var noise_grid = []
@@ -156,5 +171,5 @@ func shallow_copy_array(arr):
 	return new
 
 #things missing:
-#dealing with ambiguous cases (currently just toggled with bool) https://www.boristhebrave.com/2022/01/03/resolving-ambiguities-in-marching-squares/
-#using only a single collision shape per contiguous chunk from thresholded noise function (I think we might need some kind of mesh simplification algorithm)
+#using only a single collision shape per contiguous chunk from thresholded noise function 
+#(I think we might need some kind of mesh simplification algorithm)
