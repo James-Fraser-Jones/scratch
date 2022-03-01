@@ -15,6 +15,7 @@ export var rows: int = 10
 export var threshold: float = 0
 export var diag: int = DIAG.AVERAGE
 export var interp: bool = true
+export var middle: bool = true
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
@@ -63,22 +64,22 @@ func add_from_lookup_grid(lookup_grid, noise_grid):
 	for j in range(0, lookup_grid.size()):
 		for i in range(0, lookup_grid[0].size()):
 			var lookup_val = lookup_grid[j][i]
-			var point_sets = lookup_table[lookup_val]
-			for point_set in point_sets:
-				var points = shallow_copy_array(point_set)
+			var polygons = lookup_table[lookup_val]
+			for polygon in polygons:
+				var poly = shallow_copy_array(polygon)
 				var translate = Vector2(i, j) * 2
-				for p in range(0, points.size()):
+				for p in range(0, poly.size()):
 					if interp: #perform interpolation
-						if points[p].x == 1:
-							var l = noise_grid[j + points[p].y/2][i]
-							var r = noise_grid[j + points[p].y/2][i+1]
-							points[p].x = lerp_finder(l, r, 0, 2, threshold)
-						elif points[p].y == 1:
-							var t = noise_grid[j][i + points[p].x/2]
-							var b = noise_grid[j+1][i + points[p].x/2]
-							points[p].y = lerp_finder(t, b, 0, 2, threshold)
-					points[p] += translate
-				add_convex(points)
+						if poly[p].x == 1:
+							var l = noise_grid[j + poly[p].y/2][i]
+							var r = noise_grid[j + poly[p].y/2][i+1]
+							poly[p].x = lerp_finder(l, r, 0, 2, threshold)
+						elif poly[p].y == 1:
+							var t = noise_grid[j][i + poly[p].x/2]
+							var b = noise_grid[j+1][i + poly[p].x/2]
+							poly[p].y = lerp_finder(t, b, 0, 2, threshold)
+					poly[p] += translate
+				add_convex(poly)
 
 func lerp_finder(a, b, c, d, x):
 	var y = ((x-a)/(b-a))*(d-c)+c
@@ -130,6 +131,9 @@ func get_lookup_grid(rows, cols, grid, threshold) -> Array:
 						var avg = (tl + tr + bl + br)/4
 						if avg > threshold:
 							lookup_val = fill_middle(lookup_val)
+			elif lookup_val == 15:
+				if !middle:
+					lookup_val = 0
 			lookup_row.append(lookup_val)
 		lookup_grid.append(lookup_row)
 	return lookup_grid
@@ -138,7 +142,7 @@ func fill_middle(val: int) -> int:
 	var filled
 	if val == 5:
 		filled = 16 
-	else:
+	else: #val == 10
 		filled = 17
 	return filled
 
