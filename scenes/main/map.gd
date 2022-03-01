@@ -11,35 +11,36 @@ export var persistence: float = 0.5
 export var cols: int = 10
 export var rows: int = 10
 export var threshold: float = 0
+export var diag: bool = false
+export var interp: bool = true
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
-#export var generate2: bool setget run_generate2
 
 var noise = OpenSimplexNoise.new()
 
 const lookup_table = [
 	[],
-	[Vector2(0,1),Vector2(1,2),Vector2(0,2)],
-	[Vector2(2,1),Vector2(1,2),Vector2(2,2)],
-	[Vector2(0,1),Vector2(2,1),Vector2(2,2),Vector2(0,2)],
+	[[Vector2(0,1),Vector2(1,2),Vector2(0,2)]],
+	[[Vector2(2,1),Vector2(1,2),Vector2(2,2)]],
+	[[Vector2(0,1),Vector2(2,1),Vector2(2,2),Vector2(0,2)]],
 	
-	[Vector2(2,0),Vector2(2,1),Vector2(1,0)],
-	[Vector2(0,2),Vector2(0,1),Vector2(1,0),Vector2(2,0),Vector2(2,1),Vector2(1,2)], #ambiguous (center filled)
-	[Vector2(1,0),Vector2(2,0),Vector2(2,2),Vector2(1,2)],
-	[Vector2(1,0),Vector2(2,0),Vector2(2,2),Vector2(0,2),Vector2(0,1)],
+	[[Vector2(2,0),Vector2(2,1),Vector2(1,0)]],
+	[[Vector2(0,2),Vector2(0,1),Vector2(1,0),Vector2(2,0),Vector2(2,1),Vector2(1,2)]], #5. ambiguous (center filled)
+	[[Vector2(1,0),Vector2(2,0),Vector2(2,2),Vector2(1,2)]],
+	[[Vector2(1,0),Vector2(2,0),Vector2(2,2),Vector2(0,2),Vector2(0,1)]],
 	
-	[Vector2(0,0),Vector2(1,0),Vector2(0,1)],
-	[Vector2(0,0),Vector2(1,0),Vector2(1,2),Vector2(0,2)],
-	[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(1,2),Vector2(0,1)], #ambiguous (center filled)
-	[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(0,2)],
+	[[Vector2(0,0),Vector2(1,0),Vector2(0,1)]],
+	[[Vector2(0,0),Vector2(1,0),Vector2(1,2),Vector2(0,2)]],
+	[[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(1,2),Vector2(0,1)]], #10. ambiguous (center filled)
+	[[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(0,2)]],
 	
-	[Vector2(0,0),Vector2(2,0),Vector2(2,1),Vector2(0,1)],
-	[Vector2(0,0),Vector2(2,0),Vector2(2,1),Vector2(1,2),Vector2(0,2)],
-	[Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(1,2),Vector2(0,1)],
-	[Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(0,2)],
+	[[Vector2(0,0),Vector2(2,0),Vector2(2,1),Vector2(0,1)]],
+	[[Vector2(0,0),Vector2(2,0),Vector2(2,1),Vector2(1,2),Vector2(0,2)]],
+	[[Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(1,2),Vector2(0,1)]],
+	[[Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(0,2)]],
 	
-	#missing ambiguous cases (center unfilled)
+	#16 17. missing ambiguous cases (center unfilled)
 	[[Vector2(0,2),Vector2(0,1),Vector2(1,2)],[Vector2(2,0),Vector2(2,1),Vector2(1,0)]],
 	[[Vector2(0,0),Vector2(1,0),Vector2(0,1)],[Vector2(2,2),Vector2(1,2),Vector2(2,1)]],
 ]
@@ -51,22 +52,36 @@ func run_generate(_b):
 		var noise_grid = get_noise_grid(rows+1, cols+1, noise)
 		border_noise_grid(rows+1, cols+1, -1, noise_grid)
 		var lookup_grid = get_lookup_grid(rows, cols, noise_grid, threshold)
-		add_from_lookup_grid(lookup_grid)
+		add_from_lookup_grid(lookup_grid, noise_grid)
 		
 func run_delete(_b):
 	if Engine.is_editor_hint():
 		remove_all_convex()
 	
-func add_from_lookup_grid(lookup_grid):
+func add_from_lookup_grid(lookup_grid, noise_grid):
 	for j in range(0, lookup_grid.size()):
 		for i in range(0, lookup_grid[0].size()):
 			var lookup_val = lookup_grid[j][i]
-			#if lookup_val < 15:
-			var points = shallow_copy_array(lookup_table[lookup_val])
-			var translate = Vector2(i, j) * 2
-			for p in range(0, points.size()):
-				points[p] += translate
-			add_convex(points)
+			var point_sets = lookup_table[lookup_val]
+			for point_set in point_sets:
+				var points = shallow_copy_array(point_set)
+				var translate = Vector2(i, j) * 2
+				for p in range(0, points.size()):
+					if interp:
+						if points[p].x == 1:
+							var l = noise_grid[j + points[p].y/2][i]
+							var r = noise_grid[j + points[p].y/2][i+1]
+							points[p].x = lerp_finder(l, r, 0, 2, threshold)
+						elif points[p].y == 1:
+							var t = noise_grid[j][i + points[p].x/2]
+							var b = noise_grid[j+1][i + points[p].x/2]
+							points[p].y = lerp_finder(t, b, 0, 2, threshold)
+					points[p] += translate
+				add_convex(points)
+
+func lerp_finder(a, b, c, d, x):
+	var y = ((x-a)/(b-a))*(d-c)+c
+	return y
 
 func border_noise_grid(rows, cols, val, noise_grid):
 	for j in range(0, rows):
@@ -92,6 +107,11 @@ func get_lookup_val(tl, tr, bl, br, threshold) -> int:
 	acc += int(br > threshold)
 	acc *= 2
 	acc += int(bl > threshold)
+	if !diag:
+		if acc == 5:
+			acc = 16
+		elif acc == 10:
+			acc = 17
 	return acc
 
 func get_lookup_grid(rows, cols, grid, threshold) -> Array:
@@ -99,10 +119,10 @@ func get_lookup_grid(rows, cols, grid, threshold) -> Array:
 	for j in range (0, rows):
 		var lookup_row = []
 		for i in range(0, cols):
-			var tl = grid[i][j]
-			var tr = grid[i+1][j]
-			var bl = grid[i][j+1]
-			var br = grid[i+1][j+1]
+			var tl = grid[j][i]
+			var tr = grid[j][i+1]
+			var bl = grid[j+1][i]
+			var br = grid[j+1][i+1]
 			lookup_row.append(get_lookup_val(tl, tr, bl, br, threshold))
 		lookup_grid.append(lookup_row)
 	return lookup_grid
@@ -136,6 +156,5 @@ func shallow_copy_array(arr):
 	return new
 
 #things missing:
-#dealing with ambiguous cases (currently just assuming middle is always filled) https://www.boristhebrave.com/2022/01/03/resolving-ambiguities-in-marching-squares/
-#using only a single collision shape per contiguous chunk from thresholded noise function (Geometry.convex_hull_2d() might be useful)
-#doing linear interpolation
+#dealing with ambiguous cases (currently just toggled with bool) https://www.boristhebrave.com/2022/01/03/resolving-ambiguities-in-marching-squares/
+#using only a single collision shape per contiguous chunk from thresholded noise function (I think we might need some kind of mesh simplification algorithm)
