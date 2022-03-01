@@ -14,42 +14,42 @@ export var threshold: float = 0
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
-export var generate2: bool setget run_generate2
+#export var generate2: bool setget run_generate2
 
 var noise = OpenSimplexNoise.new()
 
-const lookup = [
+const lookup_table = [
 	[],
 	[Vector2(0,1),Vector2(1,2),Vector2(0,2)],
 	[Vector2(2,1),Vector2(1,2),Vector2(2,2)],
 	[Vector2(0,1),Vector2(2,1),Vector2(2,2),Vector2(0,2)],
 	
 	[Vector2(2,0),Vector2(2,1),Vector2(1,0)],
-	[Vector2(0,2),Vector2(0,1),Vector2(1,0),Vector2(2,0),Vector2(2,1),Vector2(1,2)], #ambiguous
+	[Vector2(0,2),Vector2(0,1),Vector2(1,0),Vector2(2,0),Vector2(2,1),Vector2(1,2)], #ambiguous (center filled)
 	[Vector2(1,0),Vector2(2,0),Vector2(2,2),Vector2(1,2)],
 	[Vector2(1,0),Vector2(2,0),Vector2(2,2),Vector2(0,2),Vector2(0,1)],
 	
 	[Vector2(0,0),Vector2(1,0),Vector2(0,1)],
 	[Vector2(0,0),Vector2(1,0),Vector2(1,2),Vector2(0,2)],
-	[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(1,2),Vector2(0,1)], #ambiguous
+	[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(1,2),Vector2(0,1)], #ambiguous (center filled)
 	[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(0,2)],
 	
 	[Vector2(0,0),Vector2(2,0),Vector2(2,1),Vector2(0,1)],
 	[Vector2(0,0),Vector2(2,0),Vector2(2,1),Vector2(1,2),Vector2(0,2)],
 	[Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(1,2),Vector2(0,1)],
 	[Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(0,2)],
+	
+	#missing ambiguous cases (center unfilled)
+	[[Vector2(0,2),Vector2(0,1),Vector2(1,2)],[Vector2(2,0),Vector2(2,1),Vector2(1,0)]],
+	[[Vector2(0,0),Vector2(1,0),Vector2(0,1)],[Vector2(2,2),Vector2(1,2),Vector2(2,1)]],
 ]
-
-func run_generate2(_b):
-	if Engine.is_editor_hint():
-		pass
-		#try and do chunk by chunk instead
 
 func run_generate(_b):
 	if Engine.is_editor_hint():
 		update_noise_params()
 		remove_all_convex()
 		var noise_grid = get_noise_grid(rows+1, cols+1, noise)
+		border_noise_grid(rows+1, cols+1, -1, noise_grid)
 		var lookup_grid = get_lookup_grid(rows, cols, noise_grid, threshold)
 		add_from_lookup_grid(lookup_grid)
 		
@@ -60,11 +60,21 @@ func run_delete(_b):
 func add_from_lookup_grid(lookup_grid):
 	for j in range(0, lookup_grid.size()):
 		for i in range(0, lookup_grid[0].size()):
-			var points = shallow_copy_array(lookup[lookup_grid[j][i]])
+			var lookup_val = lookup_grid[j][i]
+			#if lookup_val < 15:
+			var points = shallow_copy_array(lookup_table[lookup_val])
 			var translate = Vector2(i, j) * 2
 			for p in range(0, points.size()):
 				points[p] += translate
 			add_convex(points)
+
+func border_noise_grid(rows, cols, val, noise_grid):
+	for j in range(0, rows):
+		noise_grid[j][0] = val
+		noise_grid[j][cols-1] = val
+	for i in range(0, cols):
+		noise_grid[0][i] = val
+		noise_grid[rows-1][i] = val
 
 func update_noise_params():
 	noise.lacunarity = lacunarity
