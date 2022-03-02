@@ -12,6 +12,7 @@ export var threshold: float = 0
 export var diag: int = DIAG.AVERAGE
 export var interp: bool = true
 export var middle: bool = true
+export var only_edges: bool = true
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
@@ -37,50 +38,24 @@ const lookup_table = [ #first edge is always cell-cutting, all vertices traverse
 	[[Vector2(0,1),Vector2(1,2),Vector2(2,2),Vector2(2,0),Vector2(0,0)]],
 	[[Vector2(0,0),Vector2(0,2),Vector2(2,2),Vector2(2,0)]],
 	
-	#still some ambiguity about which orientation to give these
-	#since there are 2 cell-cutting edges
-	[[Vector2(1,0),Vector2(0,1),Vector2(0,2),Vector2(1,2),Vector2(2,1),Vector2(2,0)]], 
-	[[Vector2(2,1),Vector2(1,0),Vector2(0,0),Vector2(0,1),Vector2(1,2),Vector2(2,2)]],
-]
-
-const dir_table = [
-	[],
-	[[DIR.LEFT, DIR.DOWN]],
-	[[DIR.RIGHT, DIR.DOWN]],
-	[[DIR.LEFT, DIR.RIGHT]],
-	
-	[[DIR.RIGHT, DIR.UP]],
-	[[DIR.LEFT, DIR.DOWN], [DIR.RIGHT, DIR.UP]],
-	[[DIR.UP, DIR.DOWN]],
-	[[DIR.LEFT, DIR.UP]],
-	
-	[[DIR.LEFT, DIR.UP]],
-	[[DIR.UP, DIR.DOWN]],
-	[[DIR.LEFT, DIR.UP], [DIR.RIGHT, DIR.DOWN]],
-	[[DIR.RIGHT, DIR.UP]],
-	
-	[[DIR.LEFT, DIR.RIGHT]],
-	[[DIR.RIGHT, DIR.DOWN]],
-	[[DIR.LEFT, DIR.DOWN]],
-	[],
-	
-	[[DIR.LEFT, DIR.UP], [DIR.RIGHT, DIR.DOWN]],
-	[[DIR.LEFT, DIR.DOWN], [DIR.RIGHT, DIR.UP]],
+	[[Vector2(1,0),Vector2(0,1),Vector2(0,2), Vector2(1,2),Vector2(2,1),Vector2(2,0)]], 
+	[[Vector2(2,1),Vector2(1,0),Vector2(0,0), Vector2(0,1),Vector2(1,2),Vector2(2,2)]],
 ]
 
 func run_generate(_b):
 	if Engine.is_editor_hint():
-		remove_all_convex()
+		remove_all_children()
 		var noise_grid = get_noise_grid(rows+1, cols+1, noise)
 		border_noise_grid(rows+1, cols+1, -1, noise_grid)
 		var lookup_grid = get_lookup_grid(rows, cols, noise_grid, threshold)
-		add_from_lookup_grid(lookup_grid, noise_grid)
+		do_the_rest(lookup_grid, noise_grid)
 		
 func run_delete(_b):
 	if Engine.is_editor_hint():
-		remove_all_convex()
-	
-func add_from_lookup_grid(lookup_grid, noise_grid):
+		remove_all_children()
+
+func do_the_rest(lookup_grid, noise_grid):
+	var edges = []
 	for j in range(0, lookup_grid.size()):
 		for i in range(0, lookup_grid[0].size()):
 			var lookup_val = lookup_grid[j][i]
@@ -99,7 +74,35 @@ func add_from_lookup_grid(lookup_grid, noise_grid):
 							var b = noise_grid[j+1][i + poly[p].x/2]
 							poly[p].y = lerp_finder(t, b, 0, 2, threshold)
 					poly[p] += translate
-				add_convex(poly)
+				if !only_edges:
+					add_convex(poly)
+				else:
+					edges.append([poly[0], poly[1]])
+					if poly.size() == 6:
+						edges.append([poly[4], poly[5]])
+	if only_edges:
+		traverse_edges(edges)
+
+func traverse_edges(edges: Array):
+	while (edges.size() > 0):
+		var points: Array = edges.pop_back()
+		var first_point = points[0]
+		var last_point = points[1]
+		while (last_point != first_point):
+			for i in range(0, edges.size()):
+				var edge = edges[i]
+				if edge[0] == last_point:
+					points.append(edge[1])
+					last_point = edge[1]
+					edges.remove(i)
+					break
+				elif edge[1] == last_point:
+					points.append(edge[0])
+					last_point = edge[0]
+					edges.remove(i)
+					break
+		points.pop_back()
+		add_poly(points)		
 
 func lerp_finder(a, b, c, d, x):
 	var y = ((x-a)/(b-a))*(d-c)+c
@@ -145,7 +148,7 @@ func get_lookup_grid(rows, cols, grid, threshold) -> Array:
 						if avg > threshold:
 							lookup_val = fill_middle(lookup_val)
 			elif lookup_val == 15:
-				if !middle:
+				if !middle or only_edges:
 					lookup_val = 0
 			lookup_row.append(lookup_val)
 		lookup_grid.append(lookup_row)
@@ -168,7 +171,7 @@ func get_noise_grid(rows, cols, noise) -> Array:
 		noise_grid.append(noise_row)
 	return noise_grid
 
-func remove_all_convex():
+func remove_all_children():
 	for child in get_children():
 		child.queue_free()
 
@@ -181,12 +184,15 @@ func add_convex(points):
 		add_child(col_shape)
 		col_shape.owner = get_tree().edited_scene_root #otherwise won't show up in scene tree
 
+func add_poly(points):
+	if points.size() > 0:
+		var col_poly = CollisionPolygon2D.new()
+		col_poly.polygon = points
+		add_child(col_poly)
+		col_poly.owner = get_tree().edited_scene_root #otherwise won't show up in scene tree
+
 func shallow_copy_array(arr):
 	var new = []
 	for elem in arr:
 		new.append(elem)
 	return new
-
-#things missing:
-#using only a single collision shape per contiguous chunk from thresholded noise function 
-#(I think we might need some kind of mesh simplification algorithm)
