@@ -2,6 +2,7 @@ tool
 extends StaticBody2D
 
 enum DIAG {FALSE = 0, AVERAGE = 1, TRUE = 2}
+enum DIR {UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3}
 
 export var noise: OpenSimplexNoise = OpenSimplexNoise.new()
 
@@ -15,29 +16,56 @@ export var middle: bool = true
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
 
-const lookup_table = [
+const lookup_table = [ #first edge is always cell-cutting, all vertices traversed anti-clockwise
 	[],
-	[[Vector2(0,1),Vector2(1,2),Vector2(0,2)]],
+	[[Vector2(1,2),Vector2(0,1),Vector2(0,2)]],
 	[[Vector2(2,1),Vector2(1,2),Vector2(2,2)]],
-	[[Vector2(0,1),Vector2(2,1),Vector2(2,2),Vector2(0,2)]],
+	[[Vector2(2,1),Vector2(0,1),Vector2(0,2),Vector2(2,2)]],
 	
-	[[Vector2(2,0),Vector2(2,1),Vector2(1,0)]],
-	[[Vector2(0,2),Vector2(0,1),Vector2(1,2)],[Vector2(2,0),Vector2(2,1),Vector2(1,0)]],
-	[[Vector2(1,0),Vector2(2,0),Vector2(2,2),Vector2(1,2)]],
-	[[Vector2(1,0),Vector2(2,0),Vector2(2,2),Vector2(0,2),Vector2(0,1)]],
+	[[Vector2(1,0),Vector2(2,1),Vector2(2,0)]],
+	[[Vector2(1,2),Vector2(0,1),Vector2(0,2)],[Vector2(1,0),Vector2(2,1),Vector2(2,0)]],
+	[[Vector2(1,0),Vector2(1,2),Vector2(2,2),Vector2(2,0)]],
+	[[Vector2(1,0),Vector2(0,1),Vector2(0,2),Vector2(2,2),Vector2(2,0)]],
 	
-	[[Vector2(0,0),Vector2(1,0),Vector2(0,1)]],
-	[[Vector2(0,0),Vector2(1,0),Vector2(1,2),Vector2(0,2)]],
-	[[Vector2(0,0),Vector2(1,0),Vector2(0,1)],[Vector2(2,2),Vector2(1,2),Vector2(2,1)]],
-	[[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(0,2)]],
+	[[Vector2(0,1),Vector2(1,0),Vector2(0,0)]],
+	[[Vector2(1,2),Vector2(1,0),Vector2(0,0),Vector2(0,2)]],
+	[[Vector2(0,1),Vector2(1,0),Vector2(0,0)],[Vector2(2,1),Vector2(1,2),Vector2(2,2)]],
+	[[Vector2(2,1),Vector2(1,0),Vector2(0,0),Vector2(0,2),Vector2(2,2)]],
 	
-	[[Vector2(0,0),Vector2(2,0),Vector2(2,1),Vector2(0,1)]],
-	[[Vector2(0,0),Vector2(2,0),Vector2(2,1),Vector2(1,2),Vector2(0,2)]],
-	[[Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(1,2),Vector2(0,1)]],
-	[[Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(0,2)]],
+	[[Vector2(0,1),Vector2(2,1),Vector2(2,0),Vector2(0,0)]],
+	[[Vector2(1,2),Vector2(2,1),Vector2(2,0),Vector2(0,0),Vector2(0,2)]],
+	[[Vector2(0,1),Vector2(1,2),Vector2(2,2),Vector2(2,0),Vector2(0,0)]],
+	[[Vector2(0,0),Vector2(0,2),Vector2(2,2),Vector2(2,0)]],
 	
-	[[Vector2(0,2),Vector2(0,1),Vector2(1,0),Vector2(2,0),Vector2(2,1),Vector2(1,2)]], 
-	[[Vector2(0,0),Vector2(1,0),Vector2(2,1),Vector2(2,2),Vector2(1,2),Vector2(0,1)]],
+	#still some ambiguity about which orientation to give these
+	#since there are 2 cell-cutting edges
+	[[Vector2(1,0),Vector2(0,1),Vector2(0,2),Vector2(1,2),Vector2(2,1),Vector2(2,0)]], 
+	[[Vector2(2,1),Vector2(1,0),Vector2(0,0),Vector2(0,1),Vector2(1,2),Vector2(2,2)]],
+]
+
+const dir_table = [
+	[],
+	[[DIR.LEFT, DIR.DOWN]],
+	[[DIR.RIGHT, DIR.DOWN]],
+	[[DIR.LEFT, DIR.RIGHT]],
+	
+	[[DIR.RIGHT, DIR.UP]],
+	[[DIR.LEFT, DIR.DOWN], [DIR.RIGHT, DIR.UP]],
+	[[DIR.UP, DIR.DOWN]],
+	[[DIR.LEFT, DIR.UP]],
+	
+	[[DIR.LEFT, DIR.UP]],
+	[[DIR.UP, DIR.DOWN]],
+	[[DIR.LEFT, DIR.UP], [DIR.RIGHT, DIR.DOWN]],
+	[[DIR.RIGHT, DIR.UP]],
+	
+	[[DIR.LEFT, DIR.RIGHT]],
+	[[DIR.RIGHT, DIR.DOWN]],
+	[[DIR.LEFT, DIR.DOWN]],
+	[],
+	
+	[[DIR.LEFT, DIR.UP], [DIR.RIGHT, DIR.DOWN]],
+	[[DIR.LEFT, DIR.DOWN], [DIR.RIGHT, DIR.UP]],
 ]
 
 func run_generate(_b):
