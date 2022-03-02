@@ -13,6 +13,7 @@ export var diag: int = DIAG.AVERAGE
 export var interp: bool = true
 export var middle: bool = true
 export var only_edges: bool = true
+export var error: float = 0.1
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
@@ -81,26 +82,33 @@ func do_the_rest(lookup_grid, noise_grid):
 					if poly.size() == 6:
 						edges.append([poly[4], poly[5]])
 	if only_edges:
-		traverse_edges(edges)
+		traverse_edges(edges, error)
 
-func traverse_edges(edges: Array):
+func traverse_edges(edges: Array, error: float):
 	while (edges.size() > 0):
 		var points: Array = edges.pop_back()
 		var first_point = points[0]
 		var last_point = points[1]
 		while (last_point != first_point):
+			var found = false
 			for i in range(0, edges.size()):
 				var edge = edges[i]
-				if edge[0] == last_point:
+				if (edge[0] - last_point).length() < error:
 					points.append(edge[1])
 					last_point = edge[1]
 					edges.remove(i)
+					found = true
 					break
-				elif edge[1] == last_point:
+				elif (edge[1] - last_point).length() < error:
 					points.append(edge[0])
 					last_point = edge[0]
 					edges.remove(i)
+					found = true
 					break
+			if !found:
+				add_poly(points)
+				print(points[points.size()-1])
+				return
 		points.pop_back()
 		add_poly(points)		
 
