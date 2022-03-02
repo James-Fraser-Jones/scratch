@@ -3,12 +3,7 @@ extends StaticBody2D
 
 enum DIAG {FALSE = 0, AVERAGE = 1, TRUE = 2}
 
-export var seeed: int = 0
-export var period: float = 64.0
-
-export var octaves: int = 3
-export var lacunarity: float = 2.0
-export var persistence: float = 0.5
+export var noise: OpenSimplexNoise = OpenSimplexNoise.new()
 
 export var cols: int = 10
 export var rows: int = 10
@@ -19,8 +14,6 @@ export var middle: bool = true
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
-
-var noise = OpenSimplexNoise.new()
 
 const lookup_table = [
 	[],
@@ -49,7 +42,6 @@ const lookup_table = [
 
 func run_generate(_b):
 	if Engine.is_editor_hint():
-		update_noise_params()
 		remove_all_convex()
 		var noise_grid = get_noise_grid(rows+1, cols+1, noise)
 		border_noise_grid(rows+1, cols+1, -1, noise_grid)
@@ -92,13 +84,6 @@ func border_noise_grid(rows, cols, val, noise_grid):
 	for i in range(0, cols):
 		noise_grid[0][i] = val
 		noise_grid[rows-1][i] = val
-
-func update_noise_params():
-	noise.lacunarity = lacunarity
-	noise.octaves = octaves
-	noise.period = period
-	noise.persistence = persistence
-	noise.seed = seeed
 
 func get_lookup_val(tl, tr, bl, br, threshold) -> int:
 	var acc = 0
