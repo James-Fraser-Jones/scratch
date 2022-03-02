@@ -80,7 +80,7 @@ func do_the_rest(lookup_grid, noise_grid):
 				else:
 					edges.append([poly[0], poly[1]])
 					if poly.size() == 6:
-						edges.append([poly[4], poly[5]])
+						edges.append([poly[3], poly[4]])
 	if only_edges:
 		traverse_edges(edges, error)
 
@@ -93,13 +93,13 @@ func traverse_edges(edges: Array, error: float):
 			var found = false
 			for i in range(0, edges.size()):
 				var edge = edges[i]
-				if (edge[0] - last_point).length() < error:
+				if edge[0] == last_point:
 					points.append(edge[1])
 					last_point = edge[1]
 					edges.remove(i)
 					found = true
 					break
-				elif (edge[1] - last_point).length() < error:
+				elif edge[1] == last_point:
 					points.append(edge[0])
 					last_point = edge[0]
 					edges.remove(i)
@@ -107,7 +107,6 @@ func traverse_edges(edges: Array, error: float):
 					break
 			if !found:
 				add_poly(points)
-				print(points[points.size()-1])
 				return
 		points.pop_back()
 		add_poly(points)		
