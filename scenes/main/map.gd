@@ -13,7 +13,9 @@ export var diag: int = DIAG.AVERAGE
 export var interp: bool = true
 export var middle: bool = true
 export var only_edges: bool = true
-export var error: float = 0.1
+export var image_path: NodePath
+export var p_scale: Vector2 = Vector2.ONE
+export var p_trans: Vector2 = Vector2.ZERO
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
@@ -46,10 +48,22 @@ const lookup_table = [ #first edge is always cell-cutting, all vertices traverse
 func run_generate(_b):
 	if Engine.is_editor_hint():
 		remove_all_children()
+		update_image()
 		var noise_grid = get_noise_grid(rows+1, cols+1, noise)
 		border_noise_grid(rows+1, cols+1, -1, noise_grid)
 		var lookup_grid = get_lookup_grid(rows, cols, noise_grid, threshold)
 		do_the_rest(lookup_grid, noise_grid)
+
+func update_image():
+	if(image_path):
+		var image: Sprite = get_node(image_path)
+		var noise_tex: NoiseTexture = NoiseTexture.new()
+		noise_tex.noise = noise
+		noise_tex.width = cols+1
+		noise_tex.height = rows+1
+		image.texture = noise_tex
+		image.position = Vector2(rows,cols)
+		image.scale = Vector2.ONE * 2
 		
 func run_delete(_b):
 	if Engine.is_editor_hint():
@@ -75,6 +89,8 @@ func do_the_rest(lookup_grid, noise_grid):
 							var b = noise_grid[j+1][i + poly[p].x/2]
 							poly[p].y = lerp_finder(t, b, 0, 2, threshold)
 					poly[p] += translate
+					poly[p] *= p_scale
+					poly[p] += p_trans
 				if !only_edges:
 					add_convex(poly)
 				else:
@@ -82,9 +98,9 @@ func do_the_rest(lookup_grid, noise_grid):
 					if poly.size() == 6:
 						edges.append([poly[3], poly[4]])
 	if only_edges:
-		traverse_edges(edges, error)
+		traverse_edges(edges)
 
-func traverse_edges(edges: Array, error: float):
+func traverse_edges(edges: Array):
 	while (edges.size() > 0):
 		var points: Array = edges.pop_back()
 		var first_point = points[0]
