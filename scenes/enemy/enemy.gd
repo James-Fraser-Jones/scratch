@@ -17,5 +17,3 @@ func _physics_process(delta):
 			var nav_pos = path[1]
 			var move_vec = (nav_pos - position).normalized() * speed * delta
 			move(move_vec)
-		else:
-			print("move error: ", path)

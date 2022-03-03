@@ -47,8 +47,8 @@ func bake_() -> void:
 					var temp = poly[i].rotated(collider.rotation) + collider.position
 					poly.set(i, temp.rotated(body.rotation) + body.position)
 					
-				var new_poly = Geometry.offset_polygon_2d(poly, local_offset, Geometry.JOIN_SQUARE)[0]
-				outlines.append(new_poly)
+				#var new_poly = Geometry.offset_polygon_2d(poly, local_offset, Geometry.JOIN_SQUARE)[0]
+				outlines.append(poly)
 		
 		var outer_points = PoolVector2Array([-size/2, Vector2(size.x, -size.y)/2, size/2, Vector2(-size.x, size.y)/2])
 		outlines.append(outer_points)
