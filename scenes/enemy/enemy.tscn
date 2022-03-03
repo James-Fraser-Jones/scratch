@@ -6,10 +6,11 @@
 
 [node name="enemy" instance=ExtResource( 2 )]
 collision_layer = 10
-collision_mask = 5
+collision_mask = 3
 script = ExtResource( 1 )
-speed = 250.0
+speed = 350.0
 
 [node name="gun" parent="." index="2" instance=ExtResource( 3 )]
 attack_speed = 3.0
+bullet_damage = 0
 col_mask = 5

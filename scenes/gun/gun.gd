@@ -2,6 +2,7 @@ extends Node2D
 
 export var attack_speed : float = 15
 export var attack_spread : float = .1
+export var bullet_damage : int = 5
 export var col_mask : int = 0
 
 const bullet_scene = preload("res://scenes/bullet/bullet.tscn")
@@ -28,5 +29,6 @@ func shoot(shoot_vec):
 		bullet.rotation = angle + PI/2 + rand_range(-attack_spread/2, attack_spread/2)
 		bullet.position = global_position
 		bullet.collision_mask = col_mask
+		bullet.damage = bullet_damage
 		main.add_child(bullet)
 		attack_cur = 0

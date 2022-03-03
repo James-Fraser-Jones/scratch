@@ -31,3 +31,9 @@ func _input(event):
 			player.add_to_group("players")
 			add_child(player)
 	
+	if event.is_action_pressed("zoom_in"):
+		$cam.zoom = $cam.zoom / 2
+		
+	if event.is_action_pressed("zoom_out"):
+		$cam.zoom = $cam.zoom * 2
+	

@@ -26,13 +26,11 @@ current = true
 zoom = Vector2( 2, 2 )
 
 [node name="spawners" type="Node2D" parent="."]
-visible = false
 
 [node name="player" type="Node2D" parent="spawners"]
-position = Vector2( -432.785, 111.41 )
 
 [node name="enemy" type="Node2D" parent="spawners"]
-position = Vector2( -36.5103, -165.09 )
+position = Vector2( 0, -300 )
 
 [node name="navbaker" type="Node2D" parent="."]
 visible = false
