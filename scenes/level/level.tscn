@@ -1,0 +1,59 @@
+[gd_scene load_steps=5 format=2]
+
+[sub_resource type="RectangleShape2D" id=2]
+extents = Vector2( 40, 40 )
+
+[sub_resource type="RectangleShape2D" id=4]
+extents = Vector2( 351.75, 25 )
+
+[sub_resource type="CircleShape2D" id=5]
+radius = 151.0
+
+[sub_resource type="CircleShape2D" id=7]
+radius = 60.0
+
+[node name="level" type="Node2D"]
+
+[node name="obstacle" type="StaticBody2D" parent="."]
+position = Vector2( -32, -122 )
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="obstacle"]
+shape = SubResource( 2 )
+
+[node name="obstacle2" type="StaticBody2D" parent="."]
+position = Vector2( -369, -221 )
+collision_mask = 0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="obstacle2"]
+rotation = -0.20944
+polygon = PoolVector2Array( -67, 29, -55, -81, 49, -51, 136, -118, 176, 13, 116, -66, 54, -18, -30, -49 )
+
+[node name="obstacle6" type="StaticBody2D" parent="."]
+position = Vector2( 656, 380 )
+collision_mask = 0
+
+[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="obstacle6"]
+polygon = PoolVector2Array( 30, 85, 196, 91, 201, -128, -143, -163, -146, 120 )
+
+[node name="obstacle3" type="StaticBody2D" parent="."]
+position = Vector2( -84, 273 )
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="obstacle3"]
+rotation = -0.349066
+shape = SubResource( 4 )
+
+[node name="obstacle4" type="StaticBody2D" parent="."]
+position = Vector2( 488, -189 )
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="obstacle4"]
+shape = SubResource( 5 )
+
+[node name="obstacle5" type="StaticBody2D" parent="."]
+position = Vector2( -675, 170 )
+collision_mask = 0
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="obstacle5"]
+shape = SubResource( 7 )

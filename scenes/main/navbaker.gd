@@ -5,7 +5,8 @@ export var size: Vector2 = Vector2(2048, 1200)
 export var offset: float = 45
 export var circle_res: int = 10
 export var circle_res_growth: float = .01
-export var target: NodePath
+export var map_path: NodePath
+export var nav_path: NodePath
 export var bake: bool = false setget run_bake
 
 func run_bake(_b):
@@ -13,11 +14,11 @@ func run_bake(_b):
 		bake_()
 
 func bake_() -> void:
-	if target:
+	if nav_path and map_path:
 		var local_offset = offset
 		var outlines = []
 		
-		var bodies = get_children()
+		var bodies = get_node(map_path).get_children()
 		for body in bodies:
 			var colliders = body.get_children()
 			for collider in colliders:
@@ -56,4 +57,4 @@ func bake_() -> void:
 		for outline in outlines:
 			nav_poly.add_outline(outline)
 		nav_poly.make_polygons_from_outlines() #fails if "convex partition failed"
-		get_node(target).navpoly = nav_poly
+		get_node(nav_path).navpoly = nav_poly

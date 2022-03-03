@@ -12,6 +12,10 @@ func _physics_process(delta):
 			var shoot_vec = player.position - position
 			$gun.shoot(shoot_vec)
 		
-		var nav_pos = nav.get_simple_path(position, player.position)[1]
-		var move_vec = (nav_pos - position).normalized() * speed * delta
-		move(move_vec)
+		var path = nav.get_simple_path(position, player.position)
+		if path.size() > 1:
+			var nav_pos = path[1]
+			var move_vec = (nav_pos - position).normalized() * speed * delta
+			move(move_vec)
+		else:
+			print("move error: ", path)
