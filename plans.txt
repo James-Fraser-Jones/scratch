@@ -1,14 +1,5 @@
-For terrain generation:
--We can do perlin noise + marching squares with interpolation
--We can do multiple layers of varying frequencies to generate:
-	-Landscape
-	-Hills
-	-Boulders
-	-Obstacles
-	-Etc..
--Then we OR them all together to get the final map
--But also, higher layers can influence lower ones by acting as a multiplier to influence lower layers to avoid/coincide with higher ones (athough cutoff point will need to be increased to compensate)
--Then we could also have procedural structures/buildings etc..
-
-For now, we need 1 layer of perlin noise, interpolated marching squares + an external wall
-this is going to clash with the auto-generated navigation :/
+-Add navmesh offset back in but you'll have to implement polygon inflation yourself to avoid vertex duplication
+-Look into how flocking behaviours are coded for boids, try to make enemies do it and see if you can make it fluid
+-Maybe rewrite the map generation script to simplify it for the actual use case of generating polygons
+-Maybe also write code that simplifies away unnecessary vertices in the generated polygons (perhaps not really necessary)
+-Also consider whether 2/sec frequency on path updating is reasonable for enemy AI and whether that contributes to current poor movement behavior
