@@ -70,4 +70,4 @@ func _physics_process(delta):
 			var avoid_vec = avoid()
 			#print(rad2deg(avoid_vec.angle()))
 			var move_vec = avoid_vec + goal_vec * (1 - avoid_vec.length())
-			move(move_vec * move_quota)
+			move(goal_vec * move_quota)
