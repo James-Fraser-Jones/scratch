@@ -1,5 +1,12 @@
--Add navmesh offset back in but you'll have to implement polygon inflation yourself to avoid vertex duplication
 -Look into how flocking behaviours are coded for boids, try to make enemies do it and see if you can make it fluid
 -Maybe rewrite the map generation script to simplify it for the actual use case of generating polygons
 -Maybe also write code that simplifies away unnecessary vertices in the generated polygons (perhaps not really necessary)
--Also consider whether 2/sec frequency on path updating is reasonable for enemy AI and whether that contributes to current poor movement behavior
+-Consider whether 2/sec frequency on path updating is reasonable for enemy AI and whether that contributes to current poor movement behavior
+
+Need:
+-Way to circumvent convex error that happens when overlapping regions are generated in navigation polygon
+-Better enemy movement code that smoothly avoids walls, each other, and player
+-Algorithm for placing objects of various sizes (player, enemies, bosses, items, teleporter, ...)
+-Structure items as a set of variables on all characters which can be ticked up or down, all item effects then implemented on character
+	(this implies character will understand that there are 3 basic abilities available + ult but they are abstract (i.e. unimplemented))
+	(also stuff like sprinting will be acknowledged, even if enemies don't use it)

@@ -6,8 +6,22 @@ export var offset: float = 45
 export var circle_res: int = 10
 export var circle_res_growth: float = .01
 export var map_path: NodePath
+export var clip: bool = true
 export var bake: bool setget run_bake
 export var delete: bool setget run_delete
+export var test: bool setget run_test
+
+func run_test(_b):
+	if Engine.is_editor_hint():
+		remove_all_children()
+		var outlines = []
+		outlines.append([Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(0,2)])
+		outlines.append([Vector2(2,2),Vector2(3,2),Vector2(3,3),Vector2(2,3)])
+		var nav_poly: NavigationPolygon = NavigationPolygon.new()
+		for outline in outlines:
+			nav_poly.add_outline(outline)
+		nav_poly.make_polygons_from_outlines() #fails if "convex partition failed"
+		add_instance(nav_poly)
 
 func run_bake(_b):
 	if Engine.is_editor_hint() and map_path:
@@ -50,6 +64,21 @@ func run_bake(_b):
 		
 		var outer_points = PoolVector2Array([-size/2, Vector2(size.x, -size.y)/2, size/2, Vector2(-size.x, size.y)/2])
 		outlines.append(outer_points)
+		
+		#here's the idea:
+		#check if there is any overlap: Geometry.intersect_polygons_2d(outlines[i], outlines[j]) == []
+		#if there is then: Geometry.merge_polygons_2d(outlines[i], outlines[j])
+		#note: since outlines[j] is now part of outlines[i], need to restart the search on outlines[i] while deleting the existing outlines[j]
+		if clip:
+			for i in range(0, outlines.size()):
+				for j in range(0, outlines.size()):
+					print("i = ", i, ", j = ", j)
+					if j == i:
+						continue
+					var clip = Geometry.clip_polygons_2d(outlines[i], outlines[j])
+					Geometry.intersect_polygons_2d(outlines[i], outlines[j]) == []
+					if clip.size() > 0:
+						outlines[i] = clip[0]
 		
 		var nav_poly: NavigationPolygon = NavigationPolygon.new()
 		for outline in outlines:
