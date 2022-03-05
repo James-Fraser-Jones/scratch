@@ -6,7 +6,7 @@ export var offset: float = 45
 export var circle_res: int = 10
 export var circle_res_growth: float = .01
 export var map_path: NodePath
-export var clip: bool = true
+export var merge: bool = true
 export var bake: bool setget run_bake
 export var delete: bool setget run_delete
 export var test: bool setget run_test
@@ -14,9 +14,14 @@ export var test: bool setget run_test
 func run_test(_b):
 	if Engine.is_editor_hint():
 		remove_all_children()
+		
 		var outlines = []
 		outlines.append([Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(0,2)])
-		outlines.append([Vector2(2,2),Vector2(3,2),Vector2(3,3),Vector2(2,3)])
+		outlines.append([Vector2(1,1),Vector2(3,1),Vector2(3,3),Vector2(1,3)])
+		outlines.append(Geometry.merge_polygons_2d(outlines[0], outlines[1])[0])
+		outlines.remove(0)
+		outlines.remove(0)
+		
 		var nav_poly: NavigationPolygon = NavigationPolygon.new()
 		for outline in outlines:
 			nav_poly.add_outline(outline)
@@ -62,24 +67,37 @@ func run_bake(_b):
 				var new_poly = Geometry.offset_polygon_2d(poly, local_offset, Geometry.JOIN_MITER)[0]
 				outlines.append(new_poly)
 		
+		if merge:
+			var i = 0
+			while i < outlines.size():
+				var j = 0
+				while j < outlines.size():
+					if j != i:
+						if Geometry.intersect_polygons_2d(outlines[i], outlines[j]).size() > 0:
+							var merge = Geometry.merge_polygons_2d(outlines[i], outlines[j])
+							if merge.size() == 0:
+								outlines.remove(i)
+								outlines.remove(j)
+							elif merge.size() == 1:
+								outlines[i] = merge[0]
+								outlines.remove(j)
+							elif merge.size() == 2:
+								outlines[i] = merge[0]
+								outlines[j] = merge[1]
+							elif merge.size() > 2:
+								outlines[i] = merge[0]
+								outlines[j] = merge[1]
+								for k in range(2, merge.size()):
+									outlines.append(merge[k])
+							j = 0
+					j += 1
+				i += 1
+		
+		
+		
 		var outer_points = PoolVector2Array([-size/2, Vector2(size.x, -size.y)/2, size/2, Vector2(-size.x, size.y)/2])
 		outlines.append(outer_points)
-		
-		#here's the idea:
-		#check if there is any overlap: Geometry.intersect_polygons_2d(outlines[i], outlines[j]) == []
-		#if there is then: Geometry.merge_polygons_2d(outlines[i], outlines[j])
-		#note: since outlines[j] is now part of outlines[i], need to restart the search on outlines[i] while deleting the existing outlines[j]
-		if clip:
-			for i in range(0, outlines.size()):
-				for j in range(0, outlines.size()):
-					print("i = ", i, ", j = ", j)
-					if j == i:
-						continue
-					var clip = Geometry.clip_polygons_2d(outlines[i], outlines[j])
-					Geometry.intersect_polygons_2d(outlines[i], outlines[j]) == []
-					if clip.size() > 0:
-						outlines[i] = clip[0]
-		
+				
 		var nav_poly: NavigationPolygon = NavigationPolygon.new()
 		for outline in outlines:
 			nav_poly.add_outline(outline)
