@@ -2,6 +2,7 @@ extends KinematicBody2D
 
 export var max_health : int = 100
 export var speed : float = 500
+export var god : bool = false
 
 var health : int = max_health
 
@@ -11,7 +12,8 @@ func move(move_vec):
 		move_and_collide(collision.remainder.slide(collision.normal))
 
 func hurt(damage):
-	health -= damage
-	$health_bar.value = health
-	if health <= 0:
-		queue_free()
+	if !god:
+		health -= damage
+		$health_bar.value = health
+		if health <= 0:
+			queue_free()

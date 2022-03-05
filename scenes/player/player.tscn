@@ -8,6 +8,7 @@
 collision_layer = 6
 collision_mask = 3
 script = ExtResource( 3 )
+god = true
 
 [node name="CollisionShape2D" parent="." index="0"]
 modulate = Color( 0.00784314, 1, 0, 1 )

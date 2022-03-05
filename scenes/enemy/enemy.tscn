@@ -12,5 +12,4 @@ speed = 350.0
 
 [node name="gun" parent="." index="2" instance=ExtResource( 3 )]
 attack_speed = 3.0
-bullet_damage = 0
 col_mask = 5

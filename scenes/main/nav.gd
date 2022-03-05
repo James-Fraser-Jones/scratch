@@ -2,7 +2,7 @@ tool
 extends Navigation2D
 
 export var size: Vector2 = Vector2(2048, 1200)
-export var offset: float = 45
+export var offset: float = 40
 export var circle_res: int = 10
 export var circle_res_growth: float = .01
 export var map_path: NodePath
@@ -10,9 +10,6 @@ export var merge: bool = true
 export var bake: bool setget run_bake
 export var delete: bool setget run_delete
 export var test: bool setget run_test
-
-export var skip: Array = [5]
-export var flip: int = 0
 
 func run_test(_b):
 	if Engine.is_editor_hint():
@@ -35,7 +32,7 @@ func run_bake(_b):
 	if Engine.is_editor_hint() and map_path:
 		remove_all_children()
 		
-		var outlines = get_outlines(skip)
+		var outlines = get_outlines()
 				
 		var nav_poly: NavigationPolygon = NavigationPolygon.new()
 		for outline in outlines:
@@ -49,7 +46,7 @@ func run_delete(_b):
 
 ##########################################################
 
-func get_outlines(skip: Array) -> Array:
+func get_outlines() -> Array:
 	var local_offset = offset
 	var outlines = []
 	
@@ -109,15 +106,6 @@ func get_outlines(skip: Array) -> Array:
 						j = 0
 				j += 1
 			i += 1
-	
-	if flip == 0:
-		var new_outlines = []
-		for s in skip:
-			new_outlines.append(outlines[int(s)])
-		outlines = new_outlines
-	elif flip == 1:
-		for s in skip:
-			outlines.remove(s)
 	
 	var outer_points = PoolVector2Array([-size/2, Vector2(size.x, -size.y)/2, size/2, Vector2(-size.x, size.y)/2])
 	outlines.append(outer_points)

@@ -51,7 +51,7 @@ func _physics_process(delta):
 		var player = get_tree().get_nodes_in_group("players")[0]
 		
 		var space_state = get_world_2d().direct_space_state
-		var result = space_state.intersect_ray(position, player.position, [self])
+		var result = space_state.intersect_ray(position, player.position, get_tree().get_nodes_in_group("enemies"))
 		if result and result.collider == player:
 			var shoot_vec = player.position - position
 			$gun.shoot(shoot_vec)
