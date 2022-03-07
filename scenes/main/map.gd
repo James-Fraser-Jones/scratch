@@ -6,15 +6,15 @@ enum DIR {UP = 0, DOWN = 1, LEFT = 2, RIGHT = 3}
 
 export var noise: OpenSimplexNoise = OpenSimplexNoise.new()
 
-export var cols: int = 10
-export var rows: int = 10
+export var cols: int = 50
+export var rows: int = 50
 export var threshold: float = 0
 export var diag: int = DIAG.AVERAGE
 export var interp: bool = true
-export var middle: bool = true
+export var middle: bool = false
 export var only_edges: bool = true
-export var p_scale: Vector2 = Vector2.ONE
-export var p_trans: Vector2 = Vector2.ZERO
+export var size: Vector2 = Vector2.ONE
+export var center: bool = true
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
@@ -71,7 +71,7 @@ func do_the_rest(lookup_grid, noise_grid):
 			var polygons = lookup_table[lookup_val]
 			for polygon in polygons:
 				var poly = shallow_copy_array(polygon)
-				var grid_trans = Vector2(i, j) * 2
+				var trans = Vector2(i, j) * 2
 				for p in range(0, poly.size()):
 					if interp: #perform interpolation
 						if poly[p].x == 1:
@@ -82,9 +82,12 @@ func do_the_rest(lookup_grid, noise_grid):
 							var t = noise_grid[j][i + poly[p].x/2]
 							var b = noise_grid[j+1][i + poly[p].x/2]
 							poly[p].y = lerp_solver(t, b, 0, 2, threshold)
-					poly[p] += grid_trans
-					poly[p] *= p_scale
-					poly[p] += p_trans
+					poly[p] += trans
+					poly[p] /= 2 #each square is 2x2 due to lookup table using values 0-2
+					poly[p] /= Vector2(cols, rows)
+					poly[p] *= size
+					if center:
+						poly[p] -= size/2
 				if !only_edges:
 					add_convex(poly)
 				else:

@@ -7,7 +7,7 @@ export var circle_res: int = 10
 export var circle_res_growth: float = .01
 export var map_path: NodePath
 export var merge: bool = true
-export var bake: bool setget run_bake
+export var generate: bool setget run_generate
 export var delete: bool setget run_delete
 export var test: bool setget run_test
 
@@ -28,7 +28,7 @@ func run_test(_b):
 		nav_poly.make_polygons_from_outlines() #fails if "convex partition failed"
 		add_instance(nav_poly)
 
-func run_bake(_b):
+func run_generate(_b):
 	if Engine.is_editor_hint() and map_path:
 		remove_all_children()
 		
