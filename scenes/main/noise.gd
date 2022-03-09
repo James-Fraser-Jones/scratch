@@ -28,8 +28,17 @@ export var avoid_2: float = 0
 export var raise_3: float = 0
 export var avoid_3: float = 0
 
+export var threshold_index: float = -2
+
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
+export var test: bool setget run_test
+
+var noise_grid: Array = []
+
+func run_test(_b):
+	if Engine.is_editor_hint():
+		print(noise_grid[0])
 
 func run_generate(_b):
 	if Engine.is_editor_hint():
@@ -38,7 +47,7 @@ func run_generate(_b):
 		var results
 		
 		results = get_noise_grid(pixel_width, pixel_height, noise, noise_size, noise_offset, true)
-		var noise_grid = results.noise_grid
+		noise_grid = results.noise_grid
 		correct_range(noise_grid, results.min_sample, results.max_sample)
 		raise_grid(noise_grid, raise)
 		
@@ -60,15 +69,15 @@ func run_generate(_b):
 				avoid_grid(noise_grid_3, noise_grid, avoid_3)
 				merge_grids(noise_grid, noise_grid_3)
 		
-		threshold_grid(noise_grid, 0, -2)
+		var threshold_grid = get_threshold_grid(noise_grid, 0, threshold_index)
 		
 		var img = Image.new()
 		img.create(pixel_width, pixel_height, false, Image.FORMAT_RGB8)
 		img.lock()
 		for j in pixel_height:
 			for i in pixel_width:
-				var sample = noise_grid[j][i]
-				if sample == -2:
+				var sample = threshold_grid[j][i]
+				if sample == threshold_index:
 					img.set_pixel(i, j, Color.red)
 				else:
 					img.set_pixel(i, j, Color.from_hsv(0, 0, (sample + 1)/2))
@@ -130,100 +139,22 @@ func raise_grid(noise_grid: Array, raise_val: float):
 			var sample = noise_grid[j][i]
 			noise_grid[j][i] = clamp(sample + raise_val, -1, 1)
 
-func threshold_grid(noise_grid: Array, threshold: float, replacement: float):
+func get_threshold_grid(noise_grid: Array, threshold: float, replacement: float) -> Array:
+	var threshold_grid = []
 	for j in noise_grid.size():
+		var threshold_row = []
 		for i in noise_grid[0].size():
 			var sample = noise_grid[j][i]
 			if sample <= threshold:
-				noise_grid[j][i] = replacement
+				threshold_row.append(replacement)
+			else:
+				threshold_row.append(sample)
+		threshold_grid.append(threshold_row)
+	return threshold_grid
+
+##################################################################
 
 #for (a <= x <= b) linearly-mapped to (c <= y <= d), find y
 func lerp_solver(a, b, c, d, x):
 	var y = ((x-a)/(b-a))*(d-c)+c
 	return y
-
-##################################################################
-
-func merge_grids_1(lower, upper) -> Array:
-	var noise_grid = []
-	for j in pixel_height:
-		var noise_row = []
-		for i in pixel_width:
-			var u = upper[j][i]
-			var l = lower[j][i]
-			if l <= -1:
-				noise_row.append(l)
-			else:
-				noise_row.append(u)
-		noise_grid.append(noise_row)
-	return noise_grid
-
-func get_noise_grid_1(add_threshold: bool, range_correction: bool, threshold: float) -> Array:
-	var min_sample = 0
-	var max_sample = 0
-	
-	var noise_grid = []
-	for j in pixel_height:
-		var noise_row = []
-		for i in pixel_width:
-			var coord = Vector2(i, j) * noise_size / Vector2(pixel_width-1, pixel_height-1) + noise_offset
-			var sample = noise.get_noise_2dv(coord)
-			if range_correction:
-				min_sample = min(min_sample, sample)
-				max_sample = max(max_sample, sample)
-			noise_row.append(sample)
-		noise_grid.append(noise_row)
-		
-	if range_correction:
-		for j in pixel_height:
-			for i in pixel_width:
-				var current = noise_grid[j][i]
-				noise_grid[j][i] = lerp_solver(min_sample, max_sample, -1, 1, current)
-	
-	if add_threshold:
-		for j in pixel_height:
-			for i in pixel_width:
-				var current = noise_grid[j][i]
-				if current <= threshold:
-					noise_grid[j][i] = -2
-	
-	return noise_grid
-
-func get_noise_grid_2(thresholds: Array, thresh_index: int) -> Array:
-	var temp_period = noise.period
-	noise.period = noise.period * thresholds[thresh_index].period_scale
-	
-	var min_sample = 0
-	var max_sample = 0
-	
-	var noise_grid = []
-	for j in pixel_height:
-		var noise_row = []
-		for i in pixel_width:
-			var coord = Vector2(i, j) * noise_size / Vector2(pixel_width-1, pixel_height-1) + noise_offset
-			var sample = noise.get_noise_2dv(coord)
-			min_sample = min(min_sample, sample)
-			max_sample = max(max_sample, sample)
-			noise_row.append(sample)
-		noise_grid.append(noise_row)
-		
-	for j in pixel_height:
-		for i in pixel_width:
-			var current = noise_grid[j][i]
-			noise_grid[j][i] = lerp_solver(min_sample, max_sample, -1, 1, current)
-	
-	for j in pixel_height:
-		for i in pixel_width:
-			var current = noise_grid[j][i]
-			if current <= thresholds[thresh_index].threshold:
-				noise_grid[j][i] = thresholds[thresh_index].index
-	
-	noise.period = temp_period
-	return noise_grid
-
-func avoid_grid_1(noise_grid: Array, avoid_grid: Array, avoid_ratio: float):
-	for j in noise_grid.size():
-		for i in noise_grid[0].size():
-			var current = noise_grid[j][i]
-			var avoid = avoid_grid[j][i]
-			noise_grid[j][i] = current * (1 - avoid_ratio) - avoid * avoid_ratio

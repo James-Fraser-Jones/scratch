@@ -1,7 +1,7 @@
 extends Area2D
 
 export var speed : float = 2000
-export var max_time : float = 1
+export var max_time : float = 10
 export var damage : float = 5
 
 var cur_time : float = 0

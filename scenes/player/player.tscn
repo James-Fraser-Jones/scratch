@@ -8,6 +8,7 @@
 collision_layer = 6
 collision_mask = 3
 script = ExtResource( 3 )
+speed = 1500.0
 god = true
 
 [node name="CollisionShape2D" parent="." index="0"]
