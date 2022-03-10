@@ -51,7 +51,8 @@ func run_generate(_b):
 			if noise_grid.size() > 0:
 				border_noise_grid(noise_grid, 1)
 				var lookup_grid = get_lookup_grid(noise_grid, threshold)
-				do_the_rest(lookup_grid, noise_grid, size)
+				var edges = get_edges(lookup_grid, noise_grid, size)
+				traverse_edges(edges)
 		
 func run_delete(_b):
 	if Engine.is_editor_hint():
@@ -59,7 +60,7 @@ func run_delete(_b):
 
 ##########################################################
 
-func do_the_rest(lookup_grid, noise_grid, size):
+func get_edges(lookup_grid, noise_grid, size) -> Array:
 	var edges = []
 	for j in lookup_grid.size():
 		for i in lookup_grid[0].size():
@@ -93,10 +94,10 @@ func do_the_rest(lookup_grid, noise_grid, size):
 					poly[p] -= size/2
 					
 				edges.append([poly[0], poly[1]])
-				if poly.size() == 6:
+				if poly.size() == 4:
 					edges.append([poly[2], poly[3]])
 					
-	traverse_edges(edges)
+	return edges
 	
 func traverse_edges(edges: Array):
 	while (edges.size() > 0):
@@ -120,9 +121,8 @@ func traverse_edges(edges: Array):
 					found = true
 					break
 			if !found:
-				print("not found")
 				add_poly(points)
-				break
+				return
 		points.pop_back()
 		add_poly(points)
 

@@ -7,26 +7,14 @@ export var circle_res: int = 10
 export var circle_res_growth: float = .01
 export var map_path: NodePath
 export var merge: bool = true
+
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
 export var test: bool setget run_test
 
 func run_test(_b):
 	if Engine.is_editor_hint():
-		remove_all_children()
-		
-		var outlines = []
-		outlines.append([Vector2(0,0),Vector2(2,0),Vector2(2,2),Vector2(0,2)])
-		outlines.append([Vector2(1,1),Vector2(3,1),Vector2(3,3),Vector2(1,3)])
-		outlines.append(Geometry.merge_polygons_2d(outlines[0], outlines[1])[0])
-		outlines.remove(0)
-		outlines.remove(0)
-		
-		var nav_poly: NavigationPolygon = NavigationPolygon.new()
-		for outline in outlines:
-			nav_poly.add_outline(outline)
-		nav_poly.make_polygons_from_outlines() #fails if "convex partition failed"
-		add_instance(nav_poly)
+		pass
 
 func run_generate(_b):
 	if Engine.is_editor_hint() and map_path:
