@@ -29,3 +29,13 @@ percent_visible = false
 __meta__ = {
 "_edit_use_anchors_": false
 }
+
+[node name="direction_indicator" type="ColorRect" parent="."]
+margin_top = -2.5
+margin_right = 40.0
+margin_bottom = 2.5
+rect_pivot_offset = Vector2( 0, 2.5 )
+color = Color( 1, 0, 0, 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}

@@ -17,3 +17,9 @@ func hurt(damage):
 		$health_bar.value = health
 		if health <= 0:
 			queue_free()
+
+func set_rot(rad: float):
+	$direction_indicator.rect_rotation = rad2deg(rad)
+	
+func get_rot() -> float:
+	return deg2rad($direction_indicator.rect_rotation)

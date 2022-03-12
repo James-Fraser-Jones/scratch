@@ -15,4 +15,5 @@ god = true
 modulate = Color( 0.00784314, 1, 0, 1 )
 
 [node name="gun" parent="." index="2" instance=ExtResource( 2 )]
+bullet_modulate = Color( 0.00784314, 1, 0, 1 )
 col_mask = 9

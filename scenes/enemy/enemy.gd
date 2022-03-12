@@ -44,6 +44,12 @@ func scale_response(dist):
 	var response = min(1, dist / (col_max-col_radius) + (col_radius/(col_radius-col_max)))
 	return response
 
+func _process(delta):
+	if get_tree().has_group("players"):
+		var player = get_tree().get_nodes_in_group("players")[0]
+		var look_vec = player.position - position
+		set_rot(look_vec.angle())
+
 func _physics_process(delta):
 	nav_timer(delta)
 	

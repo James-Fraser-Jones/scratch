@@ -7,6 +7,10 @@ func _physics_process(delta):
 	var move_vec = lrud() * speed * delta
 	move(move_vec)
 
+func _process(delta):
+	var look_vec = get_global_mouse_position() - position
+	set_rot(look_vec.angle())
+
 func lrud() -> Vector2:
 	var input : Vector2 = Vector2.ZERO
 	if Input.is_action_pressed('right'):

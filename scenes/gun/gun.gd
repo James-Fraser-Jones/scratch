@@ -2,7 +2,9 @@ extends Node2D
 
 export var attack_speed : float = 15
 export var attack_spread : float = .1
+
 export var bullet_damage : int = 5
+export var bullet_modulate : Color = Color.white
 export var col_mask : int = 0
 
 const bullet_scene = preload("res://scenes/bullet/bullet.tscn")
@@ -30,5 +32,6 @@ func shoot(shoot_vec):
 		bullet.position = global_position
 		bullet.collision_mask = col_mask
 		bullet.damage = bullet_damage
+		bullet.modulate = bullet_modulate
 		main.add_child(bullet)
 		attack_cur = 0
