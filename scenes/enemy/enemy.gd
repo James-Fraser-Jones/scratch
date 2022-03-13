@@ -2,7 +2,7 @@ extends "res://scenes/character/character.gd"
 
 export var nav_freq : float = 2
 export var col_max : float = 50
-export var col_radius : float = 150#
+export var col_radius : float = 150
 export var cull_zone : float = 0.2
 
 onready var nav : Navigation2D = $"/root/main/nav"
