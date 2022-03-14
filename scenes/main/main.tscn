@@ -72,8 +72,6 @@ scale = Vector2( 117.188, 117.188 )
 z_index = 1
 script = ExtResource( 6 )
 size = Vector2( 60000, 60000 )
-pixel_width = 1024
-pixel_height = 1024
 value = 0.1
 alpha = 0.95
 
