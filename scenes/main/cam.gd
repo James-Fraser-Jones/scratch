@@ -8,7 +8,7 @@ func _ready():
 	if follow_path:
 		follow = get_node(follow_path)
 
-func _physics_process(delta):
+func _process(delta):
 	if follow:
 		if is_instance_valid(follow):
 			position = follow.position

@@ -7,6 +7,7 @@ export var noise_path: NodePath = ""
 export var threshold: float = 0
 export var diag: int = DIAG.AVERAGE
 export var interp: bool = true
+export var merge: bool = true
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
@@ -37,6 +38,7 @@ const lookup_table = [ #first edge is always cell-cutting, all vertices traverse
 ]
 
 var body: StaticBody2D
+var size: Vector2
 
 ##########################################################
 
@@ -47,12 +49,16 @@ func run_generate(_b):
 			add_body()
 			var noise_node = get_node(noise_path)
 			var noise_grid = noise_node.noise_grid
-			var size = noise_node.size
+			size = noise_node.size
 			if noise_grid.size() > 0:
 				border_noise_grid(noise_grid, 1)
 				var lookup_grid = get_lookup_grid(noise_grid, threshold)
 				var edges = get_edges(lookup_grid, noise_grid, size)
-				traverse_edges(edges)
+				var outlines = get_outlines(edges)
+				if merge:
+					merge_outlines(outlines)
+				for outline in outlines:
+					add_poly(outline)
 		
 func run_delete(_b):
 	if Engine.is_editor_hint():
@@ -99,7 +105,8 @@ func get_edges(lookup_grid, noise_grid, size) -> Array:
 					
 	return edges
 	
-func traverse_edges(edges: Array):
+func get_outlines(edges: Array) -> Array:
+	var outlines = []
 	while (edges.size() > 0):
 		var points: Array = edges.pop_back()
 		var first_point = points[0]
@@ -121,10 +128,37 @@ func traverse_edges(edges: Array):
 					found = true
 					break
 			if !found:
-				add_poly(points)
-				return
+				outlines.append(points)
+				return outlines
 		points.pop_back()
-		add_poly(points)
+		outlines.append(points)
+	return outlines
+
+func merge_outlines(outlines):
+	var i = 0
+	while i < outlines.size():
+		var j = 0
+		while j < outlines.size():
+			if j != i:
+				if Geometry.intersect_polygons_2d(outlines[i], outlines[j]).size() > 0:
+					var merge = Geometry.merge_polygons_2d(outlines[i], outlines[j])
+					if merge.size() == 0:
+						outlines.remove(i)
+						outlines.remove(j)
+					elif merge.size() == 1:
+						outlines[i] = merge[0]
+						outlines.remove(j)
+					elif merge.size() == 2:
+						outlines[i] = merge[0]
+						outlines[j] = merge[1]
+					elif merge.size() > 2:
+						outlines[i] = merge[0]
+						outlines[j] = merge[1]
+						for k in range(2, merge.size()):
+							outlines.append(merge[k])
+					j = 0
+			j += 1
+		i += 1
 
 ##########################################################
 

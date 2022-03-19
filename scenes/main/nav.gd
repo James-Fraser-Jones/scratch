@@ -1,11 +1,12 @@
 tool
 extends Navigation2D
 
-export var size: Vector2 = Vector2(2048, 1200)
+export var map_path: NodePath
+
+export var border_width: float = 1000
 export var offset: float = 40
 export var circle_res: int = 10
 export var circle_res_growth: float = .01
-export var map_path: NodePath
 export var merge: bool = true
 
 export var generate: bool setget run_generate
@@ -20,7 +21,8 @@ func run_generate(_b):
 	if Engine.is_editor_hint() and map_path:
 		remove_all_children()
 		
-		var outlines = get_outlines()
+		var map = get_node(map_path)
+		var outlines = get_outlines(map)
 				
 		var nav_poly: NavigationPolygon = NavigationPolygon.new()
 		for outline in outlines:
@@ -34,11 +36,11 @@ func run_delete(_b):
 
 ##########################################################
 
-func get_outlines() -> Array:
+func get_outlines(map) -> Array:
 	var local_offset = offset
 	var outlines = []
 	
-	var bodies = get_node(map_path).get_children()
+	var bodies = map.get_children()
 	for body in bodies:
 		var colliders = body.get_children()
 		for collider in colliders:
@@ -70,35 +72,39 @@ func get_outlines() -> Array:
 			outlines.append(new_poly)
 	
 	if merge:
-		var i = 0
-		while i < outlines.size():
-			var j = 0
-			while j < outlines.size():
-				if j != i:
-					if Geometry.intersect_polygons_2d(outlines[i], outlines[j]).size() > 0:
-						var merge = Geometry.merge_polygons_2d(outlines[i], outlines[j])
-						if merge.size() == 0:
-							outlines.remove(i)
-							outlines.remove(j)
-						elif merge.size() == 1:
-							outlines[i] = merge[0]
-							outlines.remove(j)
-						elif merge.size() == 2:
-							outlines[i] = merge[0]
-							outlines[j] = merge[1]
-						elif merge.size() > 2:
-							outlines[i] = merge[0]
-							outlines[j] = merge[1]
-							for k in range(2, merge.size()):
-								outlines.append(merge[k])
-						j = 0
-				j += 1
-			i += 1
+		merge_outlines(outlines)
 	
+	var size = map.size + Vector2.ONE * border_width
 	var outer_points = PoolVector2Array([-size/2, Vector2(size.x, -size.y)/2, size/2, Vector2(-size.x, size.y)/2])
 	outlines.append(outer_points)
 	
 	return outlines
+
+func merge_outlines(outlines):
+	var i = 0
+	while i < outlines.size():
+		var j = 0
+		while j < outlines.size():
+			if j != i:
+				if Geometry.intersect_polygons_2d(outlines[i], outlines[j]).size() > 0:
+					var merge = Geometry.merge_polygons_2d(outlines[i], outlines[j])
+					if merge.size() == 0:
+						outlines.remove(i)
+						outlines.remove(j)
+					elif merge.size() == 1:
+						outlines[i] = merge[0]
+						outlines.remove(j)
+					elif merge.size() == 2:
+						outlines[i] = merge[0]
+						outlines[j] = merge[1]
+					elif merge.size() > 2:
+						outlines[i] = merge[0]
+						outlines[j] = merge[1]
+						for k in range(2, merge.size()):
+							outlines.append(merge[k])
+					j = 0
+			j += 1
+		i += 1
 
 func add_instance(navpoly):
 	var inst = NavigationPolygonInstance.new()
