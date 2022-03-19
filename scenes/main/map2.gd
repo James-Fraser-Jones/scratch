@@ -3,7 +3,9 @@ extends Node2D
 
 enum DIAG {FALSE = 0, AVERAGE = 1, TRUE = 2}
 
-export var noise_path: NodePath = ""
+export var noise_path: NodePath
+export var size: Vector2
+
 export var threshold: float = 0
 export var diag: int = DIAG.AVERAGE
 export var interp: bool = true
@@ -11,6 +13,7 @@ export var merge: bool = true
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
+export var test: bool setget run_test
 
 const lookup_table = [ #first edge is always cell-cutting, all vertices traversed anti-clockwise
 	[],
@@ -38,13 +41,12 @@ const lookup_table = [ #first edge is always cell-cutting, all vertices traverse
 ]
 
 var body: StaticBody2D
-var size: Vector2
 
 ##########################################################
 
 func run_generate(_b):
 	if Engine.is_editor_hint():
-		if noise_path != "":
+		if noise_path:
 			remove_all_children()
 			add_body()
 			var noise_node = get_node(noise_path)
@@ -63,6 +65,10 @@ func run_generate(_b):
 func run_delete(_b):
 	if Engine.is_editor_hint():
 		remove_all_children()
+
+func run_test(_b):
+	if Engine.is_editor_hint():
+		pass
 
 ##########################################################
 
