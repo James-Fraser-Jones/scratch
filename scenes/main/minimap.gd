@@ -4,10 +4,10 @@ export var cam_path : NodePath
 export var map_path : NodePath
 
 export var icon_color : Color = Color.green
-export var icon_radius : float = 1
+export var icon_pixel_radius : float = 2
 
 export var box_color : Color = Color.red
-export var box_width : float = 1
+export var box_pixel_width : float = 2
 
 export var terrain_color : Color = Color.blue
 
@@ -25,15 +25,18 @@ var cam_zoom : Vector2 = Vector2.ONE
 func _ready():
 	map = get_node(map_path)
 	cam = get_node(cam_path)
+	
 	cam_dim = $"/root".get_viewport().size
-	var viewport = get_parent()
-	var viewport_cont = viewport.get_parent()
+	
+	var scale = max(map.size.x/fog_pixel_width, map.size.y/fog_pixel_height)
 	$icon.color = icon_color
-	$icon.radius = icon_radius
+	$icon.radius = icon_pixel_radius * scale
 	$box.color = box_color
-	$box.width = box_width
+	$box.width = box_pixel_width * scale
+	
+	var viewport = get_parent()
 	$cam.zoom = map.size / viewport.size
-	#viewport_cont.rect_size = viewport.size
+	
 	copy_map()
 	generate_fog()
 
@@ -67,8 +70,6 @@ func make_polygon(col_poly: CollisionPolygon2D) -> Polygon2D:
 	poly.polygon = col_poly.polygon
 	poly.color = terrain_color
 	return poly
-
-############################################################
 	
 func get_pixel_pos(pos: Vector2) -> Vector2:
 	var pixel_pos = (pos + map.size/2) / map.size * Vector2(fog_pixel_width, fog_pixel_height)
