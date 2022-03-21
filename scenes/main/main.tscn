@@ -299,7 +299,6 @@ margin_bottom = -28.0
 rect_min_size = Vector2( 500, 30 )
 theme = ExtResource( 10 )
 step = 1.0
-value = 100.0
 script = ExtResource( 11 )
 __meta__ = {
 "_edit_use_anchors_": false

@@ -8,12 +8,10 @@
 collision_layer = 6
 collision_mask = 3
 script = ExtResource( 3 )
+health_visible_time = 0.0
 
 [node name="CollisionShape2D" parent="." index="0"]
 modulate = Color( 0.00784314, 1, 0, 1 )
-
-[node name="health_bar" parent="." index="1"]
-visible = false
 
 [node name="gun" parent="." index="2" instance=ExtResource( 2 )]
 bullet_modulate = Color( 0.00784314, 1, 0, 1 )
