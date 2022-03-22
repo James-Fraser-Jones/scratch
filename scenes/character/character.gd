@@ -4,6 +4,11 @@ export var max_health : int = 100
 export var speed : float = 500
 export var god : bool = false
 export var health_visible_time : float = 5
+export var damage_number_time : float = 0.1
+export var damage_number_rise : float = 6
+export var damage_number_lean_range : float = 16
+
+const damage_number_scene = preload("res://scenes/damage_number/damage_number.tscn")
 
 var health : int = max_health
 var cur_health_visible_time : float = -1
@@ -22,12 +27,23 @@ func move(move_vec):
 
 func hurt(damage):
 	if !god:
-		health -= damage
-		$health_bar.value = health
-		cur_health_visible_time = 0
-		$health_bar.visible = true
 		if health <= 0:
 			queue_free()
+			return
+			
+		health -= damage
+		$health_bar.value = health
+		
+		cur_health_visible_time = 0
+		$health_bar.visible = true
+		
+		var damage_number = damage_number_scene.instance()
+		damage_number.text = str(damage)
+		damage_number.rect_position.y -= 40
+		damage_number.time = damage_number_time * damage
+		damage_number.rise = damage_number_rise * damage
+		damage_number.lean_range = damage_number_lean_range * damage
+		add_child(damage_number)
 
 func set_rot(rad: float):
 	$direction_indicator.rect_rotation = rad2deg(rad)

@@ -15,7 +15,7 @@ func _input(event):
 		
 	if event.is_action_pressed("spawn_enemy"):
 		var enemy = enemy_scene.instance()
-		enemy.position = $spawners/enemy.position #Vector2(rand_range(-5000, 5000), rand_range(-5000, 5000)) #(doesn't work because enemies spawn in the wall)
+		enemy.position = $spawners/enemy.position
 		enemy.add_to_group("enemies")
 		add_child(enemy)
 		
