@@ -2,14 +2,29 @@
 
 [ext_resource path="res://scenes/damage_number/damage_number.gd" type="Script" id=1]
 
-[node name="damage_number" type="Label"]
-margin_left = -10.5
-margin_top = -16.5
-margin_right = -3.5
-margin_bottom = -2.5
-rect_scale = Vector2( 3, 3 )
-text = "T"
+[node name="damage_number" type="Control"]
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+margin_left = -3.5
+margin_top = -14.0
+margin_right = 3.5
 script = ExtResource( 1 )
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="Label" type="Label" parent="."]
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+margin_left = -3.5
+margin_top = -7.0
+margin_right = 3.5
+margin_bottom = 7.0
+text = "T"
 __meta__ = {
 "_edit_use_anchors_": false
 }

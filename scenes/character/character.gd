@@ -38,11 +38,13 @@ func hurt(damage: int):
 		$health_bar.visible = true
 		
 		var damage_number = damage_number_scene.instance()
-		damage_number.text = str(damage)
-		damage_number.rect_position.y -= 40
+		damage_number.margin_top -= 30
+		damage_number.margin_bottom -= 30
 		damage_number.time = damage_number_time * damage
 		damage_number.rise = damage_number_rise * damage
 		damage_number.lean_range = damage_number_lean_range * damage
+		damage_number.set_number(damage)
+		damage_number.rect_scale = Vector2.ONE * 3
 		add_child(damage_number)
 		
 		if health <= 0:

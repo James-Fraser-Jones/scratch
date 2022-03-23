@@ -1,4 +1,4 @@
-extends Label
+extends Control
 
 export var time : float = 1
 export var rise : float = 1
@@ -17,3 +17,14 @@ func _process(delta):
 	rect_position.y -= rise*scale
 	rect_position.x += lean*scale
 	modulate.a -= scale
+
+func set_number(number: int):
+	$Label.text = str(number)
+	center_control($Label)
+
+func center_control(control : Control):
+	var size = control.get_minimum_size()
+	control.margin_left = -size.x/2
+	control.margin_right = size.x/2
+	control.margin_top = -size.y/2
+	control.margin_bottom = size.y/2

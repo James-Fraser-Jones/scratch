@@ -14,7 +14,6 @@ script = ExtResource( 1 )
 shape = SubResource( 1 )
 
 [node name="health_bar" type="ProgressBar" parent="."]
-visible = false
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
