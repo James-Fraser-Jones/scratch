@@ -10,8 +10,12 @@ export var damage_number_lean_range : float = 16
 
 const damage_number_scene = preload("res://scenes/damage_number/damage_number.tscn")
 
-var health : int = max_health
+onready var health : int = max_health #onready necessary to allow player scene to overwrite using its own max_health
 var cur_health_visible_time : float = -1
+
+func _ready():
+	$health_bar.max_value = max_health
+	$health_bar.value = max_health
 
 func _process(delta):
 	if cur_health_visible_time >= 0:
@@ -25,12 +29,8 @@ func move(move_vec):
 	if collision:
 		move_and_collide(collision.remainder.slide(collision.normal))
 
-func hurt(damage):
+func hurt(damage: int):
 	if !god:
-		if health <= 0:
-			queue_free()
-			return
-			
 		health -= damage
 		$health_bar.value = health
 		
@@ -44,6 +44,10 @@ func hurt(damage):
 		damage_number.rise = damage_number_rise * damage
 		damage_number.lean_range = damage_number_lean_range * damage
 		add_child(damage_number)
+		
+		if health <= 0:
+			queue_free()
+			return
 
 func set_rot(rad: float):
 	$direction_indicator.rect_rotation = rad2deg(rad)

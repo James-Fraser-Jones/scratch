@@ -26,7 +26,9 @@ func _input(event):
 			player.add_to_group("players")
 			add_child(player)
 			$cam.follow = player
-			$hud/player_health.player = player
+			$hud/player_healthbar.character = player
+			$hud/player_healthbar.max_value = player.get_node("health_bar").max_value
+			$hud/player_healthbar.value = player.get_node("health_bar").value
 	
 	if event.is_action_pressed("zoom_in"):
 		$cam.zoom = $cam.zoom / 2
