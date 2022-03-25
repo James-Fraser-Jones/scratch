@@ -15,7 +15,7 @@ export var test: bool setget run_test
 
 func run_test(_b):
 	if Engine.is_editor_hint():
-		random_point()
+		pass
 
 func run_generate(_b):
 	if Engine.is_editor_hint() and map_path:
@@ -33,27 +33,6 @@ func run_generate(_b):
 func run_delete(_b):
 	if Engine.is_editor_hint():
 		remove_all_children()
-
-##########################################################
-
-#https://www.reddit.com/r/godot/comments/mqp29g/how_do_i_get_a_random_position_inside_a_collision/
-func random_point():
-	var max_vertices = 0
-	var nav_poly: NavigationPolygon = get_child(0).navpoly
-	var points = []
-	var vertices = nav_poly.get_vertices()
-	for i in nav_poly.get_polygon_count():
-		var poly = nav_poly.get_polygon(i)
-		if poly.size() > max_vertices:
-			max_vertices = poly.size()
-			points = []
-			for index in poly:
-				points.append(vertices[index])
-	var poly = Polygon2D.new()
-	poly.polygon = PoolVector2Array(points)
-	var main = get_parent() #main can't be accessed via $"/root/main" when in-editor, there's loads of hidden layers between root and main
-	main.add_child(poly)
-	poly.owner = get_tree().get_edited_scene_root() #otherwise won't show up in scene tree
 
 func get_outlines(map) -> Array:
 	var local_offset = offset
