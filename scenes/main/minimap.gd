@@ -11,8 +11,7 @@ export var box_pixel_width : float = 2
 
 export var terrain_color : Color = Color.blue
 
-export var fog_pixel_width: int = 512
-export var fog_pixel_height: int = 512
+export var fog_pixel_res: int = 512
 export var fog_value: float = 0.1
 export var fog_alpha: float = 0.95
 
@@ -22,20 +21,24 @@ var map : Node2D
 var cam_dim : Vector2
 var cam_zoom : Vector2 = Vector2.ONE
 
+var map_length : float
+
 func _ready():
 	map = get_node(map_path)
 	cam = get_node(cam_path)
 	
 	cam_dim = $"/root".get_viewport().size
+	map_length = max(map.size.x, map.size.y)
 	
-	var scale = max(map.size.x/fog_pixel_width, map.size.y/fog_pixel_height)
+	var scale = map_length / fog_pixel_res
 	$icon.color = icon_color
 	$icon.radius = icon_pixel_radius * scale
 	$box.color = box_color
 	$box.width = box_pixel_width * scale
 	
 	var viewport = get_parent()
-	$cam.zoom = map.size / viewport.size
+	var viewport_length = max(viewport.size.x, viewport.size.y)
+	$cam.zoom = Vector2.ONE * map_length / viewport_length
 	
 	copy_map()
 	generate_fog()
@@ -72,18 +75,20 @@ func make_polygon(col_poly: CollisionPolygon2D) -> Polygon2D:
 	return poly
 	
 func get_pixel_pos(pos: Vector2) -> Vector2:
-	var pixel_pos = (pos + map.size/2) / map.size * Vector2(fog_pixel_width, fog_pixel_height)
-	pixel_pos = Vector2(clamp(pixel_pos.x, 0, fog_pixel_width-1), clamp(pixel_pos.y, 0, fog_pixel_height-1))
+	var map_size = Vector2.ONE * map_length
+	var fog_size = Vector2.ONE * fog_pixel_res
+	var pixel_pos = (pos + map_size/2) / map_size * fog_size
+	pixel_pos = Vector2(clamp(pixel_pos.x, 0, fog_pixel_res-1), clamp(pixel_pos.y, 0, fog_pixel_res-1))
 	return pixel_pos
 
 func generate_fog():
-	$fog.scale = map.size / Vector2(fog_pixel_width, fog_pixel_height)
+	$fog.scale = Vector2.ONE * map_length / fog_pixel_res
 	
 	var img = Image.new()
-	img.create(fog_pixel_width, fog_pixel_height, false, Image.FORMAT_RGBA8)
+	img.create(fog_pixel_res, fog_pixel_res, false, Image.FORMAT_RGBA8)
 	img.lock()
-	for j in fog_pixel_height:
-		for i in fog_pixel_width:
+	for j in fog_pixel_res:
+		for i in fog_pixel_res:
 			img.set_pixel(i, j, Color.from_hsv(0, 0, fog_value, fog_alpha))
 	img.unlock()
 	
