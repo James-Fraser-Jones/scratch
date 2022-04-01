@@ -25,7 +25,9 @@ func _input(event):
 			player.position = $spawners/player.position
 			player.add_to_group("players")
 			add_child(player)
+			$cam.position = player.position #necessary because minimap updates too fast
 			$cam.follow = player
+			$hud/ViewportContainer/Viewport/minimap.enabled = true
 			$hud/player_healthbar.character = player
 			$hud/player_healthbar.max_value = player.get_node("health_bar").max_value
 			$hud/player_healthbar.value = player.get_node("health_bar").value

@@ -15,6 +15,8 @@ export var fog_pixel_res: int = 512
 export var fog_value: float = 0.1
 export var fog_alpha: float = 0.95
 
+export var enabled: bool = false setget enabled_changed
+
 var cam : Node2D
 var map : Node2D
 
@@ -44,25 +46,31 @@ func _ready():
 	generate_fog()
 
 func _physics_process(delta):
-	$icon.position = cam.position
-	$box.position = cam.position
-	
-	if cam_zoom != cam.zoom:
-		cam_zoom = cam.zoom
-		$box.size = cam_dim * cam_zoom
-	
-	var tl = get_pixel_pos(cam.position - cam_dim/2 * cam_zoom)
-	var br = get_pixel_pos(cam.position + cam_dim/2 * cam_zoom)
-	
-	var img = $fog.texture.image
-	img.lock()
-	for j in range(tl.y, br.y+1):
-		for i in range(tl.x, br.x+1):
-			img.set_pixel(i, j, Color.from_hsv(0,0,0,0))
-	img.unlock()
-	$fog.texture.set_data(img)
+	if enabled:
+		$icon.position = cam.position
+		$box.position = cam.position
+		
+		if cam_zoom != cam.zoom:
+			cam_zoom = cam.zoom
+			$box.size = cam_dim * cam_zoom
+		
+		var tl = get_pixel_pos(cam.position - cam_dim/2 * cam_zoom)
+		var br = get_pixel_pos(cam.position + cam_dim/2 * cam_zoom)
+		
+		var img = $fog.texture.image
+		img.lock()
+		for j in range(tl.y, br.y+1):
+			for i in range(tl.x, br.x+1):
+				img.set_pixel(i, j, Color.from_hsv(0,0,0,0))
+		img.unlock()
+		$fog.texture.set_data(img)
 
 ############################################################
+
+func enabled_changed(e : bool):
+	enabled = e
+	$icon.visible = enabled
+	$box.visible = enabled
 
 func copy_map():
 	for col_poly in map.get_child(0).get_children():
