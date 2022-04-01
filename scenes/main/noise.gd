@@ -82,7 +82,6 @@ func run_generate(_b):
 		var tex = ImageTexture.new()
 		tex.create_from_image(img)
 		#tex.flags = ...
-		
 		texture = tex
 
 func run_delete(_b):
