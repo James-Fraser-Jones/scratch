@@ -4,16 +4,18 @@ extends Node2D
 enum DIAG {FALSE = 0, AVERAGE = 1, TRUE = 2}
 
 export var noise_path: NodePath
-export var size: Vector2
 
 export var threshold: float = 0
 export var diag: int = DIAG.AVERAGE
 export var interp: bool = true
 export var merge: bool = true
+export var size_filter: float = 1000
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
 export var test: bool setget run_test
+
+export var size: Vector2 #stored for minimap to access in-game
 
 const lookup_table = [ #first edge is always cell-cutting, all vertices traversed anti-clockwise
 	[],
@@ -49,19 +51,34 @@ func run_generate(_b):
 		if noise_path:
 			remove_all_children()
 			add_body()
+			
 			var noise_node = get_node(noise_path)
 			var noise_grid = noise_node.noise_grid
 			size = noise_node.size
+			property_list_changed_notify()
+			var pixel_width = noise_node.pixel_width
+			var pixel_height = noise_node.pixel_height
+			
 			if noise_grid.size() > 0:
-				border_noise_grid(noise_grid, 1)
-				var lookup_grid = get_lookup_grid(noise_grid, threshold)
-				var edges = get_edges(lookup_grid, noise_grid, size)
+				
+				border_noise_grid(noise_grid, pixel_width, pixel_height, 1)
+				var lookup_grid = get_lookup_grid(noise_grid, pixel_width, pixel_height, threshold)
+				var edges = get_edges(lookup_grid, noise_grid, pixel_width, pixel_height, size)
+				
 				var outlines = get_outlines(edges)
 				if merge:
 					merge_outlines(outlines)
 				for outline in outlines:
-					add_poly(outline)
-		
+					if outline.size() < 5:
+						var area: float = 0
+						var indices = Geometry.triangulate_polygon(outline)
+						for i in indices.size()/3:
+							area += triangle_area(PoolVector2Array([outline[indices[i*3]], outline[indices[i*3+1]], outline[indices[i*3+2]]]))
+							if area >= size_filter:
+								add_poly(outline)
+					else:
+						add_poly(outline)
+
 func run_delete(_b):
 	if Engine.is_editor_hint():
 		remove_all_children()
@@ -72,10 +89,10 @@ func run_test(_b):
 
 ##########################################################
 
-func get_edges(lookup_grid, noise_grid, size) -> Array:
+func get_edges(lookup_grid, noise_grid, pixel_width, pixel_height, size) -> Array:
 	var edges = []
-	for j in lookup_grid.size():
-		for i in lookup_grid[0].size():
+	for j in pixel_height-1:
+		for i in pixel_width-1:
 			var lookup_val = lookup_grid[j][i]
 			var polygons = lookup_table[lookup_val]
 			for polygon in polygons:
@@ -100,10 +117,11 @@ func get_edges(lookup_grid, noise_grid, size) -> Array:
 							var b = noise_grid[j+1][i + poly[p].x/2]
 							poly[p].y = lerp_solver(t, b, 0, 2, threshold)
 					poly[p] += trans
-					poly[p] /= 2 #each square is 2x2 due to lookup table using values 0-2
-					poly[p] /= Vector2(lookup_grid[0].size(), lookup_grid.size())
+					poly[p] /= 2
+					poly[p] /= Vector2(pixel_width, pixel_height)
 					poly[p] *= size
-					poly[p] -= size/2
+					poly[p] -= size/2 #each square is 2x2 due to lookup table using values 0-2
+					poly[p] += size / Vector2(pixel_width, pixel_height) / 2 #fix slight pixel offset
 					
 				edges.append([poly[0], poly[1]])
 				if poly.size() == 4:
@@ -168,11 +186,11 @@ func merge_outlines(outlines):
 
 ##########################################################
 
-func get_lookup_grid(noise_grid, threshold) -> Array:
+func get_lookup_grid(noise_grid, pixel_width, pixel_height, threshold) -> Array:
 	var lookup_grid = []
-	for j in noise_grid.size()-1:
+	for j in pixel_height-1:
 		var lookup_row = []
-		for i in noise_grid[0].size()-1:
+		for i in pixel_width-1:
 			var tl = noise_grid[j][i]
 			var tr = noise_grid[j][i+1]
 			var bl = noise_grid[j+1][i]
@@ -215,15 +233,13 @@ func get_lookup_val(tl, tr, bl, br, threshold) -> int:
 
 ##########################################################
 
-func border_noise_grid(noise_grid, val):
-	var height = noise_grid.size()
-	var width = noise_grid[0].size()
-	for j in height:
+func border_noise_grid(noise_grid, pixel_width, pixel_height, val):
+	for j in pixel_height:
 		noise_grid[j][0] = val
-		noise_grid[j][width-1] = val
-	for i in width:
+		noise_grid[j][pixel_width-1] = val
+	for i in pixel_width:
 		noise_grid[0][i] = val
-		noise_grid[height-1][i] = val
+		noise_grid[pixel_height-1][i] = val
 
 ##########################################################
 
@@ -257,3 +273,6 @@ func shallow_copy_array(arr):
 func lerp_solver(a, b, c, d, x):
 	var y = ((x-a)/(b-a))*(d-c)+c
 	return y
+
+func triangle_area(t: PoolVector2Array) -> float:
+	return abs((t[0]-t[1]).cross(t[2]-t[1])/2)
