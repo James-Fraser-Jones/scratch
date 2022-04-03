@@ -15,14 +15,14 @@ func _input(event):
 		
 	if event.is_action_pressed("spawn_enemy"):
 		var enemy = enemy_scene.instance()
-		enemy.position = $spawners/enemy.position
+		enemy.position = $spawner.get_random_nav_point()
 		enemy.add_to_group("enemies")
 		add_child(enemy)
 		
 	if event.is_action_pressed("spawn_player"):
 		if !get_tree().has_group("players"):
 			var player = player_scene.instance()
-			player.position = $spawners/player.position
+			player.position = $spawner.get_random_nav_point()
 			player.add_to_group("players")
 			add_child(player)
 			$cam.position = player.position #necessary because minimap updates too fast

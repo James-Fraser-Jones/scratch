@@ -116,12 +116,14 @@ func get_edges(lookup_grid, noise_grid, pixel_width, pixel_height, size) -> Arra
 							var t = noise_grid[j][i + poly[p].x/2]
 							var b = noise_grid[j+1][i + poly[p].x/2]
 							poly[p].y = lerp_solver(t, b, 0, 2, threshold)
+							
 					poly[p] += trans
-					poly[p] /= 2
+					poly[p] += Vector2.ONE #perfectly align onto pixels
+					poly[p] /= 2 #each square is 2x2 due to lookup table using values 0-2
+					
 					poly[p] /= Vector2(pixel_width, pixel_height)
 					poly[p] *= size
-					poly[p] -= size/2 #each square is 2x2 due to lookup table using values 0-2
-					poly[p] += size / Vector2(pixel_width, pixel_height) / 2 #fix slight pixel offset
+					poly[p] -= size/2 #center on screen
 					
 				edges.append([poly[0], poly[1]])
 				if poly.size() == 4:

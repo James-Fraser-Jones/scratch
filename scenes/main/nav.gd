@@ -3,11 +3,12 @@ extends Navigation2D
 
 export var map_path: NodePath
 
-export var border_width: float = 1000
-export var offset: float = 40
+export var border_width: float = 20000
+export var offset: float = 60
+export var merge: bool = true
+
 export var circle_res: int = 10
 export var circle_res_growth: float = .01
-export var merge: bool = true
 
 export var generate: bool setget run_generate
 export var delete: bool setget run_delete
@@ -20,21 +21,25 @@ func run_test(_b):
 func run_generate(_b):
 	if Engine.is_editor_hint() and map_path:
 		remove_all_children()
-		
-		var map = get_node(map_path)
-		var outlines = get_outlines(map)
-				
-		var nav_poly: NavigationPolygon = NavigationPolygon.new()
-		for outline in outlines:
-			nav_poly.add_outline(outline)
-		nav_poly.make_polygons_from_outlines() #fails if "convex partition failed"
+		var nav_poly = get_nav_poly(border_width, offset, merge)
 		add_instance(nav_poly)
 
 func run_delete(_b):
 	if Engine.is_editor_hint():
 		remove_all_children()
 
-func get_outlines(map) -> Array:
+############################################
+
+func get_nav_poly(border_width, offset, merge) -> NavigationPolygon:
+	var map = get_node(map_path)
+	var outlines = get_outlines(map, border_width, offset, merge)
+	var nav_poly: NavigationPolygon = NavigationPolygon.new()
+	for outline in outlines:
+		nav_poly.add_outline(outline)
+	nav_poly.make_polygons_from_outlines() #fails if "convex partition failed"
+	return nav_poly
+
+func get_outlines(map, border_width, offset, merge) -> Array:
 	var local_offset = offset
 	var outlines = []
 	
@@ -103,6 +108,8 @@ func merge_outlines(outlines):
 					j = 0
 			j += 1
 		i += 1
+
+############################################
 
 func add_instance(navpoly):
 	var inst = NavigationPolygonInstance.new()

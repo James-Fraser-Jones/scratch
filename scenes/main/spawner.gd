@@ -5,6 +5,10 @@ const circle_scene = preload("res://scenes/circle/circle.tscn")
 
 export var nav_path: NodePath
 
+export var border_width: float = 1
+export var offset: float = 60
+export var merge: bool = true
+
 export var particles: int = 10
 export var particle_radius: float = 60
 export var particle_color: Color = Color.red
@@ -17,8 +21,18 @@ export var test: bool setget run_test
 var triangles : Array
 var cum_areas : Array
 
+##########################################################
+
+func _ready():
+	if !Engine.is_editor_hint():
+		remove_all_children()
+		get_triangles_areas()
+
+##########################################################
+
 func run_setup(_b):
 	if Engine.is_editor_hint():
+		remove_all_children()
 		get_triangles_areas()
 
 func run_generate(_b):
@@ -33,9 +47,9 @@ func run_delete(_b):
 func run_test(_b):
 	if Engine.is_editor_hint():
 		pass
-		#print(triangle_area(PoolVector2Array([Vector2.ZERO, Vector2.UP, Vector2.RIGHT])))
 
 ##########################################################
+#testing functions
 
 func spawn_particles():
 	for i in particles:
@@ -52,10 +66,12 @@ func spawn_particle(point: Vector2):
 
 ##########################################################
 
+#singular api function for getting a random spawn point
 func get_random_nav_point() -> Vector2:
 	var index = rand_area_proportional_triangle(cum_areas)
 	return get_uniform_random_triangle_point(triangles[index])
-	
+
+#setup function
 func get_triangles_areas():
 	triangles = get_triangles()
 	cum_areas = get_cumulative_areas(triangles)
@@ -94,8 +110,10 @@ func triangle_area(t: PoolVector2Array) -> float:
 	return abs((t[0]-t[1]).cross(t[2]-t[1])/2)
 
 func get_triangles() -> Array:
+	var nav_poly: NavigationPolygon = get_node(nav_path).get_nav_poly(border_width, offset, merge)
+	
 	var triangles = []
-	var nav_poly: NavigationPolygon = get_node(nav_path).get_child(0).navpoly
+	
 	var vertices = nav_poly.get_vertices()
 	for i in nav_poly.get_polygon_count():
 		var poly_indices = nav_poly.get_polygon(i)
@@ -148,3 +166,14 @@ func generate_polygons():
 func remove_all_children():
 	for child in get_children():
 		child.queue_free()
+
+func remove_most_children():
+	for i in range(1, get_child_count()):
+		var child = get_child(i)
+		child.queue_free()
+
+func add_instance(navpoly):
+	var inst = NavigationPolygonInstance.new()
+	inst.navpoly = navpoly
+	add_child(inst)
+	inst.owner = get_tree().edited_scene_root #otherwise won't show up in scene tree
