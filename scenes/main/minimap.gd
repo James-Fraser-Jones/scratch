@@ -25,6 +25,8 @@ var cam_zoom : Vector2 = Vector2.ONE
 
 var map_length : float
 
+var unfog: Image
+
 func _ready():
 	map = get_node(map_path)
 	cam = get_node(cam_path)
@@ -57,11 +59,9 @@ func _physics_process(delta):
 		var tl = get_pixel_pos(cam.position - cam_dim/2 * cam_zoom)
 		var br = get_pixel_pos(cam.position + cam_dim/2 * cam_zoom)
 		
-		var img = $fog.texture.image
+		var img: Image = $fog.texture.image
 		img.lock()
-		for j in range(tl.y, br.y+1):
-			for i in range(tl.x, br.x+1):
-				img.set_pixel(i, j, Color.from_hsv(0,0,0,0))
+		img.blit_rect(unfog, Rect2(tl, br - tl), tl)
 		img.unlock()
 		$fog.texture.set_data(img)
 
@@ -95,13 +95,16 @@ func generate_fog():
 	var img = Image.new()
 	img.create(fog_pixel_res, fog_pixel_res, false, Image.FORMAT_RGBA8)
 	img.lock()
-	for j in fog_pixel_res:
-		for i in fog_pixel_res:
-			img.set_pixel(i, j, Color.from_hsv(0, 0, fog_value, fog_alpha))
+	img.fill(Color.from_hsv(0, 0, fog_value, fog_alpha))
 	img.unlock()
 	
 	var tex = ImageTexture.new()
 	tex.create_from_image(img)
 	#tex.flags = ...
-	
 	$fog.texture = tex
+	
+	unfog = Image.new()
+	unfog.create(fog_pixel_res, fog_pixel_res, false, Image.FORMAT_RGBA8)
+	unfog.lock()
+	unfog.fill(Color.from_hsv(0, 0, 0, 0))
+	unfog.unlock()
