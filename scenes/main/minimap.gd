@@ -61,7 +61,7 @@ func _physics_process(delta):
 		
 		var img: Image = $fog.texture.image
 		img.lock()
-		img.blit_rect(unfog, Rect2(tl, br - tl), tl)
+		img.blit_rect(unfog, Rect2(tl, br - tl + Vector2.ONE), tl)
 		img.unlock()
 		$fog.texture.set_data(img)
 
@@ -83,9 +83,8 @@ func make_polygon(col_poly: CollisionPolygon2D) -> Polygon2D:
 	return poly
 	
 func get_pixel_pos(pos: Vector2) -> Vector2:
-	var map_size = Vector2.ONE * map_length
-	var fog_size = Vector2.ONE * fog_pixel_res
-	var pixel_pos = (pos + map_size/2) / map_size * fog_size
+	var pixel_pos = (pos + Vector2.ONE*map_length/2) / map_length * (fog_pixel_res-1)
+	pixel_pos = pixel_pos.round()
 	pixel_pos = Vector2(clamp(pixel_pos.x, 0, fog_pixel_res-1), clamp(pixel_pos.y, 0, fog_pixel_res-1))
 	return pixel_pos
 
@@ -100,7 +99,7 @@ func generate_fog():
 	
 	var tex = ImageTexture.new()
 	tex.create_from_image(img)
-	#tex.flags = ...
+	tex.flags = 0 #remove filter
 	$fog.texture = tex
 	
 	unfog = Image.new()

@@ -63,23 +63,23 @@ func _physics_process(delta):
 		
 		var look_vec = player.position - position
 		set_rot(look_vec.angle())
+		
 		var space_state = get_world_2d().direct_space_state
 		var result = space_state.intersect_ray(position, player.position, get_tree().get_nodes_in_group("enemies"))
 		if result and result.collider == player:
 			$gun.shoot(look_vec)
-		
+
 		if nav_cur == -1:
 			nav_path = nav.get_simple_path(position, player.position)
-		
+
 		if nav_path.size() > 0:
 			var nav_pos = nav_path[0]
 			if position == nav_pos:
 				nav_path.remove(0)
 				nav_pos	= nav_path[0]
-				
+
 			var move_quota = speed * delta
 			var goal_vec = (nav_pos - position).normalized()
-			var avoid_vec = avoid()
-			#print(rad2deg(avoid_vec.angle()))
-			var move_vec = avoid_vec + goal_vec * (1 - avoid_vec.length())
-			move(move_vec * move_quota)
+			#var avoid_vec = avoid()
+			#var move_vec = avoid_vec + goal_vec * (1 - avoid_vec.length())
+			move(goal_vec * move_quota)
