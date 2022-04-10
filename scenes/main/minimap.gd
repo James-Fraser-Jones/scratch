@@ -83,8 +83,8 @@ func make_polygon(col_poly: CollisionPolygon2D) -> Polygon2D:
 	return poly
 	
 func get_pixel_pos(pos: Vector2) -> Vector2:
-	var pixel_pos = (pos + Vector2.ONE*map_length/2) / map_length * (fog_pixel_res-1)
-	pixel_pos = pixel_pos.round()
+	var pixel_pos = (pos + Vector2.ONE*map_length/2) / map_length * fog_pixel_res
+	pixel_pos = pixel_pos.floor()
 	pixel_pos = Vector2(clamp(pixel_pos.x, 0, fog_pixel_res-1), clamp(pixel_pos.y, 0, fog_pixel_res-1))
 	return pixel_pos
 
