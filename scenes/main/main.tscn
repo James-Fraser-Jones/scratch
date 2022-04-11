@@ -3,11 +3,11 @@
 [ext_resource path="res://scenes/main/main.gd" type="Script" id=1]
 [ext_resource path="res://scenes/main/nav.gd" type="Script" id=2]
 [ext_resource path="res://scenes/main/map2.gd" type="Script" id=3]
+[ext_resource path="res://scenes/main/hud.gd" type="Script" id=4]
 [ext_resource path="res://scenes/main/cam.gd" type="Script" id=5]
 [ext_resource path="res://scenes/rectangle/rectangle.tscn" type="PackedScene" id=6]
 [ext_resource path="res://scenes/main/minimap.gd" type="Script" id=7]
 [ext_resource path="res://scenes/circle/circle.tscn" type="PackedScene" id=8]
-[ext_resource path="res://scenes/main/fps.gd" type="Script" id=9]
 [ext_resource path="res://scenes/labelled_healthbar/labelled_healthbar.tscn" type="PackedScene" id=10]
 [ext_resource path="res://scenes/main/spawner.gd" type="Script" id=11]
 [ext_resource path="res://scenes/main/noise2.gd" type="Script" id=12]
@@ -1329,6 +1329,7 @@ zoom = Vector2( 4, 4 )
 script = ExtResource( 5 )
 
 [node name="hud" type="CanvasLayer" parent="."]
+script = ExtResource( 4 )
 
 [node name="ViewportContainer" type="ViewportContainer" parent="hud"]
 anchor_left = 1.0
@@ -1376,8 +1377,31 @@ margin_left = 14.0
 margin_top = -28.0
 margin_right = 68.0
 margin_bottom = -28.0
-text = "FPS: 100"
-script = ExtResource( 9 )
+text = "FPS: 000"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="enemies" type="Label" parent="hud"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 14.0
+margin_top = -56.0
+margin_right = 68.0
+margin_bottom = -56.0
+text = "Enemies: 000"
+__meta__ = {
+"_edit_use_anchors_": false
+}
+
+[node name="bullets" type="Label" parent="hud"]
+anchor_top = 1.0
+anchor_bottom = 1.0
+margin_left = 14.0
+margin_top = -84.0
+margin_right = 68.0
+margin_bottom = -84.0
+text = "Bullets: 000"
 __meta__ = {
 "_edit_use_anchors_": false
 }

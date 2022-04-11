@@ -30,6 +30,7 @@ func shoot(shoot_vec):
 		var angle = shoot_vec.angle()
 		bullet.rotation = angle + PI/2 + rand_range(-attack_spread/2, attack_spread/2)
 		bullet.position = global_position
+		bullet.add_to_group("bullets")
 		bullet.collision_mask = col_mask
 		bullet.damage = bullet_damage
 		bullet.modulate = bullet_modulate
